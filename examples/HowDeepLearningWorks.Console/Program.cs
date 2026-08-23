@@ -1,8 +1,10 @@
 ﻿using HowDeepLearningWorks.ActivationFunctions;
+using HowDeepLearningWorks.LossFunctions;
 using HowDeepLearningWorks.Mathematics;
 
 RunPhase11Checks();
 RunPhase12Checks();
+RunPhase13Checks();
 
 Console.WriteLine();
 Console.WriteLine("All Phase 1 checks passed.");
@@ -88,6 +90,34 @@ static void RunPhase12Checks()
 
     Console.WriteLine();
     Console.WriteLine("Phase 1.2 activation checks passed.");
+}
+
+static void RunPhase13Checks()
+{
+    var loss = new BinaryCrossEntropy();
+
+    AssertApproximately(
+        "BCE(0.9, 1)",
+        loss.Forward(0.9, 1.0),
+        -Math.Log(0.9));
+
+    AssertApproximately(
+        "BCE(0.1, 0)",
+        loss.Forward(0.1, 0.0),
+        -Math.Log(0.9));
+
+    AssertApproximately(
+        "BCE derivative(0.9, 1)",
+        loss.Derivative(0.9, 1.0),
+        -1.0 / 0.9);
+
+    AssertApproximately(
+        "BCE derivative(0.1, 0)",
+        loss.Derivative(0.1, 0.0),
+        1.0 / 0.9);
+
+    Console.WriteLine();
+    Console.WriteLine("Phase 1.3 loss checks passed.");
 }
 
 static void AssertVector(string name, Vector actual, double[] expected)
