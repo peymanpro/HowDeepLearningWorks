@@ -1,4 +1,4 @@
-using HowDeepLearningWorks.ActivationFunctions;
+﻿using HowDeepLearningWorks.ActivationFunctions;
 using HowDeepLearningWorks.Mathematics;
 
 namespace HowDeepLearningWorks.NeuralNetworks;
@@ -127,12 +127,6 @@ public sealed class DenseLayer
 
     /// <summary>
     /// Computes gradients for the layer.
-    ///
-    /// For z = Wx + b and a = activation(z):
-    /// dz = da * activation'(z)
-    /// dW = dz * x^T
-    /// db = dz
-    /// dx = W^T * dz
     /// </summary>
     public Vector Backward(Vector outputGradient)
     {
@@ -191,5 +185,28 @@ public sealed class DenseLayer
         }
 
         return new Vector(inputGradient);
+    }
+
+    /// <summary>
+    /// Updates weights and biases using gradient descent.
+    /// </summary>
+    public void UpdateParameters(double learningRate)
+    {
+        if (learningRate <= 0.0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(learningRate));
+        }
+
+        for (var row = 0; row < _weights.Rows; row++)
+        {
+            for (var column = 0; column < _weights.Columns; column++)
+            {
+                _weights[row, column] -=
+                    learningRate * WeightGradients[row, column];
+            }
+
+            _bias[row] -=
+                learningRate * BiasGradients[row];
+        }
     }
 }
