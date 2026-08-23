@@ -1,21 +1,35 @@
-﻿using HowDeepLearningWorks.Mathematics;
+using HowDeepLearningWorks.ActivationFunctions;
+using HowDeepLearningWorks.Mathematics;
 
 namespace HowDeepLearningWorks.NeuralNetworks;
 
 /// <summary>
-/// Represents a fully connected neural network layer.
+/// Represents a fully connected neural network layer with an optional activation function.
 /// </summary>
 public sealed class DenseLayer
 {
     private readonly Matrix _weights;
     private readonly Vector _bias;
+    private readonly IActivationFunction? _activation;
 
     private Vector? _lastInput;
+    private Vector? _lastPreActivation;
 
     /// <summary>
-    /// Creates a fully connected layer.
+    /// Creates a fully connected layer without an activation function.
     /// </summary>
     public DenseLayer(int inputSize, int outputSize)
+        : this(inputSize, outputSize, null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a fully connected layer with an optional activation function.
+    /// </summary>
+    public DenseLayer(
+        int inputSize,
+        int outputSize,
+        IActivationFunction? activation)
     {
         if (inputSize <= 0)
         {
@@ -29,6 +43,7 @@ public sealed class DenseLayer
 
         _weights = new Matrix(new double[outputSize, inputSize]);
         _bias = new Vector(new double[outputSize]);
+        _activation = activation;
 
         WeightGradients = new Matrix(new double[outputSize, inputSize]);
         BiasGradients = new Vector(new double[outputSize]);
@@ -45,6 +60,11 @@ public sealed class DenseLayer
     public Vector Bias => _bias;
 
     /// <summary>
+    /// Gets the activation function.
+    /// </summary>
+    public IActivationFunction? Activation => _activation;
+
+    /// <summary>
     /// Gets the gradients of the weights.
     /// </summary>
     public Matrix WeightGradients { get; }
@@ -55,8 +75,9 @@ public sealed class DenseLayer
     public Vector BiasGradients { get; }
 
     /// <summary>
-    /// Computes the linear forward pass:
+    /// Computes:
     /// z = Wx + b
+    /// a = activation(z)
     /// </summary>
     public Vector Forward(Vector input)
     {
@@ -78,14 +99,37 @@ public sealed class DenseLayer
 
         _lastInput = new Vector(inputCopy);
 
-        return (_weights * input) + _bias;
+        var preActivation = (_weights * input) + _bias;
+
+        var preActivationCopy = new double[preActivation.Length];
+
+        for (var i = 0; i < preActivation.Length; i++)
+        {
+            preActivationCopy[i] = preActivation[i];
+        }
+
+        _lastPreActivation = new Vector(preActivationCopy);
+
+        if (_activation is null)
+        {
+            return preActivation;
+        }
+
+        var activated = new double[preActivation.Length];
+
+        for (var i = 0; i < preActivation.Length; i++)
+        {
+            activated[i] = _activation.Forward(preActivation[i]);
+        }
+
+        return new Vector(activated);
     }
 
     /// <summary>
-    /// Computes gradients for the layer using the gradient
-    /// received from the next layer.
+    /// Computes gradients for the layer.
     ///
-    /// For z = Wx + b:
+    /// For z = Wx + b and a = activation(z):
+    /// dz = da * activation'(z)
     /// dW = dz * x^T
     /// db = dz
     /// dx = W^T * dz
@@ -94,7 +138,7 @@ public sealed class DenseLayer
     {
         ArgumentNullException.ThrowIfNull(outputGradient);
 
-        if (_lastInput is null)
+        if (_lastInput is null || _lastPreActivation is null)
         {
             throw new InvalidOperationException(
                 "Backward cannot be called before Forward.");
@@ -108,14 +152,27 @@ public sealed class DenseLayer
                 nameof(outputGradient));
         }
 
+        var localGradient = new double[outputGradient.Length];
+
+        for (var i = 0; i < outputGradient.Length; i++)
+        {
+            localGradient[i] = outputGradient[i];
+
+            if (_activation is not null)
+            {
+                localGradient[i] *=
+                    _activation.Derivative(_lastPreActivation[i]);
+            }
+        }
+
         for (var row = 0; row < _weights.Rows; row++)
         {
-            BiasGradients[row] = outputGradient[row];
+            BiasGradients[row] = localGradient[row];
 
             for (var column = 0; column < _weights.Columns; column++)
             {
                 WeightGradients[row, column] =
-                    outputGradient[row] * _lastInput[column];
+                    localGradient[row] * _lastInput[column];
             }
         }
 
@@ -127,7 +184,7 @@ public sealed class DenseLayer
 
             for (var row = 0; row < _weights.Rows; row++)
             {
-                sum += _weights[row, column] * outputGradient[row];
+                sum += _weights[row, column] * localGradient[row];
             }
 
             inputGradient[column] = sum;
