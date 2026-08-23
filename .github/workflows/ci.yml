@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore Core
+        run: dotnet restore src/HowDeepLearningWorks/HowDeepLearningWorks.csproj
+
+      - name: Restore Console
+        run: dotnet restore examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj
+
+      - name: Build Core
+        run: dotnet build src/HowDeepLearningWorks/HowDeepLearningWorks.csproj --configuration Release --no-restore
+
+      - name: Build Console
+        run: dotnet build examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj --configuration Release --no-restore
