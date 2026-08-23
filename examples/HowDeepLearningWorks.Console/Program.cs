@@ -14,6 +14,7 @@ RunPhase21Checks();
 RunPhase22Checks();
 RunPhase23Checks();
 RunPhase31Checks();
+RunPhase32Checks();
 
 Console.WriteLine();
 Console.WriteLine("All Phase 3 checks passed.");
@@ -191,10 +192,8 @@ static void RunPhase23Checks()
     network.Add(firstLayer);
     network.Add(secondLayer);
 
-    AssertEqual(
-        "NeuralNetwork layer count",
-        network.Layers.Count,
-        2);
+    AssertEqual("NeuralNetwork layer count",
+        network.Layers.Count, 2);
 
     var input = new Vector(new[] { 1.0, 2.0 });
 
@@ -205,9 +204,8 @@ static void RunPhase23Checks()
         output,
         new Vector(new[] { 91.0 }));
 
-    var outputGradient = new Vector(new[] { 1.0 });
-
-    var inputGradient = network.Backward(outputGradient);
+    var inputGradient = network.Backward(
+        new Vector(new[] { 1.0 }));
 
     AssertVectorEqual(
         "NeuralNetwork backward propagation",
@@ -254,20 +252,14 @@ static void RunPhase31Checks()
     reluLayer.Weights[1, 0] = -2.0;
     reluLayer.Weights[1, 1] = 1.0;
 
-    var input = new Vector(new[] { 2.0, 1.0 });
+    var output = reluLayer.Forward(
+        new Vector(new[] { 2.0, 1.0 }));
 
-    var output = reluLayer.Forward(input);
-
-    // z1 = 2 - 1 = 1  -> ReLU = 1
-    // z2 = -4 + 1 = -3 -> ReLU = 0
     AssertVectorEqual(
         "DenseLayer ReLU forward",
         output,
         new Vector(new[] { 1.0, 0.0 }));
 
-    // Incoming gradient is [1, 1].
-    // ReLU derivative keeps gradient for z1
-    // and removes it for z2.
     var inputGradient = reluLayer.Backward(
         new Vector(new[] { 1.0, 1.0 }));
 
@@ -312,6 +304,84 @@ static void RunPhase31Checks()
         0.0);
 
     Console.WriteLine("Phase 3.1 activation-aware dense layer checks passed.");
+    Console.WriteLine();
+}
+
+static void RunPhase32Checks()
+{
+    var network = new NeuralNetwork();
+
+    network.Add(new DenseLayer(4, 8, new ReLU()));
+    network.Add(new DenseLayer(8, 8, new ReLU()));
+    network.Add(new DenseLayer(8, 6, new ReLU()));
+    network.Add(new DenseLayer(6, 4, new ReLU()));
+    network.Add(new DenseLayer(4, 1, new Sigmoid()));
+
+    AssertEqual(
+        "Final network layer count",
+        network.Layers.Count,
+        5);
+
+    AssertEqual(
+        "Input layer size",
+        network.Layers[0].Weights.Columns,
+        4);
+
+    AssertEqual(
+        "Hidden layer 1 size",
+        network.Layers[0].Weights.Rows,
+        8);
+
+    AssertEqual(
+        "Hidden layer 2 size",
+        network.Layers[1].Weights.Rows,
+        8);
+
+    AssertEqual(
+        "Hidden layer 3 size",
+        network.Layers[2].Weights.Rows,
+        6);
+
+    AssertEqual(
+        "Hidden layer 4 size",
+        network.Layers[3].Weights.Rows,
+        4);
+
+    AssertEqual(
+        "Output layer size",
+        network.Layers[4].Weights.Rows,
+        1);
+
+    if (network.Layers[0].Activation is not ReLU ||
+        network.Layers[1].Activation is not ReLU ||
+        network.Layers[2].Activation is not ReLU ||
+        network.Layers[3].Activation is not ReLU ||
+        network.Layers[4].Activation is not Sigmoid)
+    {
+        throw new InvalidOperationException(
+            "Final network activation configuration is incorrect.");
+    }
+
+    var output = network.Forward(
+        new Vector(new[] { 1.0, 0.5, -1.0, 2.0 }));
+
+    AssertEqual(
+        "Final network output size",
+        output.Length,
+        1);
+
+    if (output[0] < 0.0 || output[0] > 1.0)
+    {
+        throw new InvalidOperationException(
+            $"Final network sigmoid output is outside [0, 1]: {output[0]}.");
+    }
+
+    Console.WriteLine(
+        $"Final network output: {output[0]:F6}");
+
+    Console.WriteLine(
+        "Phase 3.2 final network architecture checks passed.");
+
     Console.WriteLine();
 }
 
