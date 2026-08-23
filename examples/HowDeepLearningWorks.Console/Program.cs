@@ -11,71 +11,61 @@ RunPhase11Checks();
 RunPhase12Checks();
 RunPhase13Checks();
 RunPhase21Checks();
+RunPhase22Checks();
 
 Console.WriteLine();
 Console.WriteLine("All Phase 2 checks passed.");
 
 static void RunPhase11Checks()
 {
-    var vectorA = new Vector(new[] { 1.0, 2.0, 3.0 });
-    var vectorB = new Vector(new[] { 4.0, 5.0, 6.0 });
+    var left = new Vector(new[] { 1.0, 2.0, 3.0 });
+    var right = new Vector(new[] { 4.0, 5.0, 6.0 });
 
-    AssertVectorEqual(
-        "Vector addition",
-        vectorA + vectorB,
-        new[] { 5.0, 7.0, 9.0 });
+    AssertVectorEqual("Vector addition", left + right,
+        new Vector(new[] { 5.0, 7.0, 9.0 }));
 
-    AssertVectorEqual(
-        "Vector subtraction",
-        vectorB - vectorA,
-        new[] { 3.0, 3.0, 3.0 });
+    AssertVectorEqual("Vector subtraction", right - left,
+        new Vector(new[] { 3.0, 3.0, 3.0 }));
 
-    AssertVectorEqual(
-        "Vector scalar multiplication",
-        vectorA * 2.0,
-        new[] { 2.0, 4.0, 6.0 });
+    AssertVectorEqual("Vector scalar multiplication", left * 2.0,
+        new Vector(new[] { 2.0, 4.0, 6.0 }));
 
-    AssertApproximately(
-        "Vector dot product",
-        Vector.Dot(vectorA, vectorB),
-        32.0);
+    AssertApproximately("Vector dot product",
+        Vector.Dot(left, right), 32.0);
 
-    var matrixA = new Matrix(new[,]
+    var matrix = new Matrix(new double[,]
     {
         { 1.0, 2.0 },
         { 3.0, 4.0 }
     });
 
-    var vectorC = new Vector(new[] { 5.0, 6.0 });
+    var vector = new Vector(new[] { 5.0, 6.0 });
 
-    AssertVectorEqual(
-        "Matrix × Vector",
-        matrixA * vectorC,
-        new[] { 17.0, 39.0 });
+    AssertVectorEqual("Matrix × Vector",
+        matrix * vector,
+        new Vector(new[] { 17.0, 39.0 }));
 
-    var matrixB = new Matrix(new[,]
+    var matrixRight = new Matrix(new double[,]
     {
         { 5.0, 6.0 },
         { 7.0, 8.0 }
     });
 
-    AssertMatrixEqual(
-        "Matrix × Matrix",
-        matrixA * matrixB,
-        new[,]
+    AssertMatrixEqual("Matrix × Matrix",
+        matrix * matrixRight,
+        new Matrix(new double[,]
         {
             { 19.0, 22.0 },
             { 43.0, 50.0 }
-        });
+        }));
 
-    AssertMatrixEqual(
-        "Matrix transpose",
-        matrixA.Transpose(),
-        new[,]
+    AssertMatrixEqual("Matrix transpose",
+        matrix.Transpose(),
+        new Matrix(new double[,]
         {
             { 1.0, 3.0 },
             { 2.0, 4.0 }
-        });
+        }));
 
     Console.WriteLine("All Phase 1.1 checks passed.");
     Console.WriteLine();
@@ -85,25 +75,10 @@ static void RunPhase12Checks()
 {
     var relu = new ReLU();
 
-    AssertApproximately(
-        "ReLU(-2)",
-        relu.Forward(-2.0),
-        0.0);
-
-    AssertApproximately(
-        "ReLU(3)",
-        relu.Forward(3.0),
-        3.0);
-
-    AssertApproximately(
-        "ReLU derivative(-2)",
-        relu.Derivative(-2.0),
-        0.0);
-
-    AssertApproximately(
-        "ReLU derivative(3)",
-        relu.Derivative(3.0),
-        1.0);
+    AssertApproximately("ReLU(-2)", relu.Forward(-2.0), 0.0);
+    AssertApproximately("ReLU(3)", relu.Forward(3.0), 3.0);
+    AssertApproximately("ReLU derivative(-2)", relu.Derivative(-2.0), 0.0);
+    AssertApproximately("ReLU derivative(3)", relu.Derivative(3.0), 1.0);
 
     Console.WriteLine("Phase 1.2 activation checks passed.");
     Console.WriteLine();
@@ -113,25 +88,17 @@ static void RunPhase13Checks()
 {
     var loss = new BinaryCrossEntropy();
 
-    AssertApproximately(
-        "BCE(0.9, 1)",
-        loss.Forward(0.9, 1.0),
-        -Math.Log(0.9));
+    AssertApproximately("BCE(0.9, 1)",
+        loss.Forward(0.9, 1.0), -Math.Log(0.9));
 
-    AssertApproximately(
-        "BCE(0.1, 0)",
-        loss.Forward(0.1, 0.0),
-        -Math.Log(0.9));
+    AssertApproximately("BCE(0.1, 0)",
+        loss.Forward(0.1, 0.0), -Math.Log(0.9));
 
-    AssertApproximately(
-        "BCE derivative(0.9, 1)",
-        loss.Derivative(0.9, 1.0),
-        -1.0 / 0.9);
+    AssertApproximately("BCE derivative(0.9, 1)",
+        loss.Derivative(0.9, 1.0), -1.0 / 0.9);
 
-    AssertApproximately(
-        "BCE derivative(0.1, 0)",
-        loss.Derivative(0.1, 0.0),
-        1.0 / 0.9);
+    AssertApproximately("BCE derivative(0.1, 0)",
+        loss.Derivative(0.1, 0.0), 1.0 / 0.9);
 
     Console.WriteLine("Phase 1.3 loss checks passed.");
     Console.WriteLine();
@@ -139,45 +106,82 @@ static void RunPhase13Checks()
 
 static void RunPhase21Checks()
 {
-    var layer = new DenseLayer(2, 2);
+    var layer = new DenseLayer(2, 3);
 
-    AssertEqual(
-        "DenseLayer input size",
-        layer.Weights.Columns,
-        2);
+    AssertEqual("DenseLayer input size",
+        layer.Weights.Columns, 2);
 
-    AssertEqual(
-        "DenseLayer output size",
-        layer.Weights.Rows,
-        2);
+    AssertEqual("DenseLayer output size",
+        layer.Weights.Rows, 3);
 
-    AssertEqual(
-        "DenseLayer bias size",
-        layer.Bias.Length,
-        2);
+    AssertEqual("DenseLayer bias size",
+        layer.Bias.Length, 3);
 
-    var input = new Vector(new[] { 3.0, 4.0 });
-
+    var input = new Vector(new[] { 2.0, 3.0 });
     var output = layer.Forward(input);
 
-    AssertVectorEqual(
-        "DenseLayer forward with zero weights",
+    AssertVectorEqual("DenseLayer forward with zero weights",
         output,
-        new[] { 0.0, 0.0 });
+        new Vector(new[] { 0.0, 0.0, 0.0 }));
 
     Console.WriteLine("Phase 2.1 dense layer checks passed.");
     Console.WriteLine();
 }
 
-static void AssertEqual(
-    string name,
-    int actual,
-    int expected)
+static void RunPhase22Checks()
+{
+    var layer = new DenseLayer(2, 2);
+
+    layer.Weights[0, 0] = 1.0;
+    layer.Weights[0, 1] = 2.0;
+    layer.Weights[1, 0] = 3.0;
+    layer.Weights[1, 1] = 4.0;
+
+    layer.Bias[0] = 0.5;
+    layer.Bias[1] = 1.0;
+
+    var input = new Vector(new[] { 2.0, 3.0 });
+
+    var forward = layer.Forward(input);
+
+    AssertVectorEqual(
+        "DenseLayer forward",
+        forward,
+        new Vector(new[] { 8.5, 19.0 }));
+
+    var outputGradient = new Vector(new[] { 0.1, 0.2 });
+
+    var inputGradient = layer.Backward(outputGradient);
+
+    AssertMatrixEqual(
+        "DenseLayer weight gradients",
+        layer.WeightGradients,
+        new Matrix(new double[,]
+        {
+            { 0.2, 0.3 },
+            { 0.4, 0.6 }
+        }));
+
+    AssertVectorEqual(
+        "DenseLayer bias gradients",
+        layer.BiasGradients,
+        new Vector(new[] { 0.1, 0.2 }));
+
+    AssertVectorEqual(
+        "DenseLayer input gradients",
+        inputGradient,
+        new Vector(new[] { 0.7, 1.0 }));
+
+    Console.WriteLine("Phase 2.2 backpropagation checks passed.");
+    Console.WriteLine();
+}
+
+static void AssertEqual(string name, int actual, int expected)
 {
     if (actual != expected)
     {
-        throw new Exception(
-            $"{name} FAILED. Expected {expected}, actual {actual}.");
+        throw new InvalidOperationException(
+            $"{name} failed. Expected {expected}, received {actual}.");
     }
 
     Console.WriteLine($"PASS: {name}");
@@ -191,8 +195,8 @@ static void AssertApproximately(
 {
     if (Math.Abs(actual - expected) > tolerance)
     {
-        throw new Exception(
-            $"{name} FAILED. Expected {expected}, actual {actual}.");
+        throw new InvalidOperationException(
+            $"{name} failed. Expected {expected}, received {actual}.");
     }
 
     Console.WriteLine($"PASS: {name}");
@@ -201,22 +205,22 @@ static void AssertApproximately(
 static void AssertVectorEqual(
     string name,
     Vector actual,
-    double[] expected,
+    Vector expected,
     double tolerance = 1e-10)
 {
     if (actual.Length != expected.Length)
     {
-        throw new Exception(
-            $"{name} FAILED. Vector lengths differ.");
+        throw new InvalidOperationException(
+            $"{name} failed. Vector lengths differ.");
     }
 
-    for (var i = 0; i < expected.Length; i++)
+    for (var i = 0; i < actual.Length; i++)
     {
         if (Math.Abs(actual[i] - expected[i]) > tolerance)
         {
-            throw new Exception(
-                $"{name} FAILED at index {i}. " +
-                $"Expected {expected[i]}, actual {actual[i]}.");
+            throw new InvalidOperationException(
+                $"{name} failed at index {i}. " +
+                $"Expected {expected[i]}, received {actual[i]}.");
         }
     }
 
@@ -226,28 +230,26 @@ static void AssertVectorEqual(
 static void AssertMatrixEqual(
     string name,
     Matrix actual,
-    double[,] expected,
+    Matrix expected,
     double tolerance = 1e-10)
 {
-    if (actual.Rows != expected.GetLength(0) ||
-        actual.Columns != expected.GetLength(1))
+    if (actual.Rows != expected.Rows ||
+        actual.Columns != expected.Columns)
     {
-        throw new Exception(
-            $"{name} FAILED. Matrix dimensions differ.");
+        throw new InvalidOperationException(
+            $"{name} failed. Matrix dimensions differ.");
     }
 
     for (var row = 0; row < actual.Rows; row++)
     {
         for (var column = 0; column < actual.Columns; column++)
         {
-            if (Math.Abs(
-                    actual[row, column] -
-                    expected[row, column]) > tolerance)
+            if (Math.Abs(actual[row, column] - expected[row, column]) > tolerance)
             {
-                throw new Exception(
-                    $"{name} FAILED at [{row},{column}]. " +
+                throw new InvalidOperationException(
+                    $"{name} failed at [{row}, {column}]. " +
                     $"Expected {expected[row, column]}, " +
-                    $"actual {actual[row, column]}.");
+                    $"received {actual[row, column]}.");
             }
         }
     }
