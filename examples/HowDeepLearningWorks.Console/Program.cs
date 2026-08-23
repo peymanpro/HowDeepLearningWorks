@@ -1,6 +1,7 @@
 ﻿using HowDeepLearningWorks.ActivationFunctions;
 using HowDeepLearningWorks.LossFunctions;
 using HowDeepLearningWorks.Mathematics;
+using HowDeepLearningWorks.NeuralNetworks;
 
 Console.WriteLine("HowDeepLearningWorks");
 Console.WriteLine("====================");
@@ -9,9 +10,10 @@ Console.WriteLine();
 RunPhase11Checks();
 RunPhase12Checks();
 RunPhase13Checks();
+RunPhase21Checks();
 
 Console.WriteLine();
-Console.WriteLine("All Phase 1 checks passed.");
+Console.WriteLine("All Phase 2 checks passed.");
 
 static void RunPhase11Checks()
 {
@@ -33,10 +35,10 @@ static void RunPhase11Checks()
         vectorA * 2.0,
         new[] { 2.0, 4.0, 6.0 });
 
-   AssertApproximately(
-    "Vector dot product",
-    Vector.Dot(vectorA, vectorB),
-    32.0);
+    AssertApproximately(
+        "Vector dot product",
+        Vector.Dot(vectorA, vectorB),
+        32.0);
 
     var matrixA = new Matrix(new[,]
     {
@@ -133,6 +135,52 @@ static void RunPhase13Checks()
 
     Console.WriteLine("Phase 1.3 loss checks passed.");
     Console.WriteLine();
+}
+
+static void RunPhase21Checks()
+{
+    var layer = new DenseLayer(2, 2);
+
+    AssertEqual(
+        "DenseLayer input size",
+        layer.Weights.Columns,
+        2);
+
+    AssertEqual(
+        "DenseLayer output size",
+        layer.Weights.Rows,
+        2);
+
+    AssertEqual(
+        "DenseLayer bias size",
+        layer.Bias.Length,
+        2);
+
+    var input = new Vector(new[] { 3.0, 4.0 });
+
+    var output = layer.Forward(input);
+
+    AssertVectorEqual(
+        "DenseLayer forward with zero weights",
+        output,
+        new[] { 0.0, 0.0 });
+
+    Console.WriteLine("Phase 2.1 dense layer checks passed.");
+    Console.WriteLine();
+}
+
+static void AssertEqual(
+    string name,
+    int actual,
+    int expected)
+{
+    if (actual != expected)
+    {
+        throw new Exception(
+            $"{name} FAILED. Expected {expected}, actual {actual}.");
+    }
+
+    Console.WriteLine($"PASS: {name}");
 }
 
 static void AssertApproximately(
