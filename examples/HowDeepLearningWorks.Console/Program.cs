@@ -1,4 +1,4 @@
-ï»¿using HowDeepLearningWorks.ActivationFunctions;
+using HowDeepLearningWorks.ActivationFunctions;
 using HowDeepLearningWorks.LossFunctions;
 using HowDeepLearningWorks.Mathematics;
 using HowDeepLearningWorks.NeuralNetworks;
@@ -12,6 +12,7 @@ RunPhase12Checks();
 RunPhase13Checks();
 RunPhase21Checks();
 RunPhase22Checks();
+RunPhase23Checks();
 
 Console.WriteLine();
 Console.WriteLine("All Phase 2 checks passed.");
@@ -41,7 +42,7 @@ static void RunPhase11Checks()
 
     var vector = new Vector(new[] { 5.0, 6.0 });
 
-    AssertVectorEqual("Matrix Ã— Vector",
+    AssertVectorEqual("Matrix × Vector",
         matrix * vector,
         new Vector(new[] { 17.0, 39.0 }));
 
@@ -51,7 +52,7 @@ static void RunPhase11Checks()
         { 7.0, 8.0 }
     });
 
-    AssertMatrixEqual("Matrix Ã— Matrix",
+    AssertMatrixEqual("Matrix × Matrix",
         matrix * matrixRight,
         new Matrix(new double[,]
         {
@@ -144,8 +145,7 @@ static void RunPhase22Checks()
 
     var forward = layer.Forward(input);
 
-    AssertVectorEqual(
-        "DenseLayer forward",
+    AssertVectorEqual("DenseLayer forward",
         forward,
         new Vector(new[] { 8.5, 19.0 }));
 
@@ -153,8 +153,7 @@ static void RunPhase22Checks()
 
     var inputGradient = layer.Backward(outputGradient);
 
-    AssertMatrixEqual(
-        "DenseLayer weight gradients",
+    AssertMatrixEqual("DenseLayer weight gradients",
         layer.WeightGradients,
         new Matrix(new double[,]
         {
@@ -162,17 +161,97 @@ static void RunPhase22Checks()
             { 0.4, 0.6 }
         }));
 
-    AssertVectorEqual(
-        "DenseLayer bias gradients",
+    AssertVectorEqual("DenseLayer bias gradients",
         layer.BiasGradients,
         new Vector(new[] { 0.1, 0.2 }));
 
-    AssertVectorEqual(
-        "DenseLayer input gradients",
+    AssertVectorEqual("DenseLayer input gradients",
         inputGradient,
         new Vector(new[] { 0.7, 1.0 }));
 
     Console.WriteLine("Phase 2.2 backpropagation checks passed.");
+    Console.WriteLine();
+}
+
+static void RunPhase23Checks()
+{
+    var network = new NeuralNetwork();
+
+    var firstLayer = new DenseLayer(2, 2);
+    firstLayer.Weights[0, 0] = 1.0;
+    firstLayer.Weights[0, 1] = 2.0;
+    firstLayer.Weights[1, 0] = 3.0;
+    firstLayer.Weights[1, 1] = 4.0;
+
+    var secondLayer = new DenseLayer(2, 1);
+    secondLayer.Weights[0, 0] = 5.0;
+    secondLayer.Weights[0, 1] = 6.0;
+
+    network.Add(firstLayer);
+    network.Add(secondLayer);
+
+    AssertEqual(
+        "NeuralNetwork layer count",
+        network.Layers.Count,
+        2);
+
+    var input = new Vector(new[] { 1.0, 2.0 });
+
+    var output = network.Forward(input);
+
+    // First layer:
+    // [1 2] [1] = 5
+    // [3 4] [2] = 11
+    //
+    // Second layer:
+    // [5 6] [5] = 25 + 66 = 91
+    AssertVectorEqual(
+        "NeuralNetwork forward propagation",
+        output,
+        new Vector(new[] { 91.0 }));
+
+    var outputGradient = new Vector(new[] { 1.0 });
+
+    var inputGradient = network.Backward(outputGradient);
+
+    // d(second layer input) = [5, 6]
+    //
+    // d(first layer input):
+    // [1 3] [5] = 5 + 18 = 23
+    // [2 4] [6] = 30 + 24 = 34
+    AssertVectorEqual(
+        "NeuralNetwork backward propagation",
+        inputGradient,
+        new Vector(new[] { 23.0, 34.0 }));
+
+    AssertMatrixEqual(
+        "NeuralNetwork first layer gradients",
+        firstLayer.WeightGradients,
+        new Matrix(new double[,]
+        {
+            { 5.0, 10.0 },
+            { 6.0, 12.0 }
+        }));
+
+    AssertMatrixEqual(
+        "NeuralNetwork second layer gradients",
+        secondLayer.WeightGradients,
+        new Matrix(new double[,]
+        {
+            { 5.0, 11.0 }
+        }));
+
+    AssertVectorEqual(
+        "NeuralNetwork first layer bias gradients",
+        firstLayer.BiasGradients,
+        new Vector(new[] { 5.0, 6.0 }));
+
+    AssertVectorEqual(
+        "NeuralNetwork second layer bias gradients",
+        secondLayer.BiasGradients,
+        new Vector(new[] { 1.0 }));
+
+    Console.WriteLine("Phase 2.3 neural network checks passed.");
     Console.WriteLine();
 }
 
