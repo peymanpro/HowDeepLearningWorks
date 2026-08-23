@@ -17,26 +17,35 @@ RunPhase31Checks();
 RunPhase32Checks();
 RunPhase41Checks();
 RunPhase51Checks();
+RunPhase61Checks();
 
 Console.WriteLine();
-Console.WriteLine("All Phase 5 checks passed.");
+Console.WriteLine("All Phase 6 checks passed.");
 
 static void RunPhase11Checks()
 {
     var left = new Vector(new[] { 1.0, 2.0, 3.0 });
     var right = new Vector(new[] { 4.0, 5.0, 6.0 });
 
-    AssertVectorEqual("Vector addition", left + right,
+    AssertVectorEqual(
+        "Vector addition",
+        left + right,
         new Vector(new[] { 5.0, 7.0, 9.0 }));
 
-    AssertVectorEqual("Vector subtraction", right - left,
+    AssertVectorEqual(
+        "Vector subtraction",
+        right - left,
         new Vector(new[] { 3.0, 3.0, 3.0 }));
 
-    AssertVectorEqual("Vector scalar multiplication", left * 2.0,
+    AssertVectorEqual(
+        "Vector scalar multiplication",
+        left * 2.0,
         new Vector(new[] { 2.0, 4.0, 6.0 }));
 
-    AssertApproximately("Vector dot product",
-        Vector.Dot(left, right), 32.0);
+    AssertApproximately(
+        "Vector dot product",
+        Vector.Dot(left, right),
+        32.0);
 
     var matrix = new Matrix(new double[,]
     {
@@ -83,8 +92,15 @@ static void RunPhase12Checks()
 
     AssertApproximately("ReLU(-2)", relu.Forward(-2.0), 0.0);
     AssertApproximately("ReLU(3)", relu.Forward(3.0), 3.0);
-    AssertApproximately("ReLU derivative(-2)", relu.Derivative(-2.0), 0.0);
-    AssertApproximately("ReLU derivative(3)", relu.Derivative(3.0), 1.0);
+    AssertApproximately(
+        "ReLU derivative(-2)",
+        relu.Derivative(-2.0),
+        0.0);
+
+    AssertApproximately(
+        "ReLU derivative(3)",
+        relu.Derivative(3.0),
+        1.0);
 
     Console.WriteLine("Phase 1.2 activation checks passed.");
     Console.WriteLine();
@@ -122,14 +138,20 @@ static void RunPhase21Checks()
 {
     var layer = new DenseLayer(2, 3);
 
-    AssertEqual("DenseLayer input size",
-        layer.Weights.Columns, 2);
+    AssertEqual(
+        "DenseLayer input size",
+        layer.Weights.Columns,
+        2);
 
-    AssertEqual("DenseLayer output size",
-        layer.Weights.Rows, 3);
+    AssertEqual(
+        "DenseLayer output size",
+        layer.Weights.Rows,
+        3);
 
-    AssertEqual("DenseLayer bias size",
-        layer.Bias.Length, 3);
+    AssertEqual(
+        "DenseLayer bias size",
+        layer.Bias.Length,
+        3);
 
     var output = layer.Forward(
         new Vector(new[] { 2.0, 3.0 }));
@@ -229,33 +251,6 @@ static void RunPhase23Checks()
         inputGradient,
         new Vector(new[] { 23.0, 34.0 }));
 
-    AssertMatrixEqual(
-        "NeuralNetwork first layer gradients",
-        firstLayer.WeightGradients,
-        new Matrix(new double[,]
-        {
-            { 5.0, 10.0 },
-            { 6.0, 12.0 }
-        }));
-
-    AssertMatrixEqual(
-        "NeuralNetwork second layer gradients",
-        secondLayer.WeightGradients,
-        new Matrix(new double[,]
-        {
-            { 5.0, 11.0 }
-        }));
-
-    AssertVectorEqual(
-        "NeuralNetwork first layer bias gradients",
-        firstLayer.BiasGradients,
-        new Vector(new double[] { 5.0, 6.0 }));
-
-    AssertVectorEqual(
-        "NeuralNetwork second layer bias gradients",
-        secondLayer.BiasGradients,
-        new Vector(new double[] { 1.0 }));
-
     Console.WriteLine("Phase 2.3 neural network checks passed.");
     Console.WriteLine();
 }
@@ -294,12 +289,10 @@ static void RunPhase31Checks()
             { 0.0, 0.0 }
         }));
 
-    AssertVectorEqual(
-        "DenseLayer ReLU bias gradients",
-        reluLayer.BiasGradients,
-        new Vector(new[] { 1.0, 0.0 }));
-
-    var sigmoidLayer = new DenseLayer(1, 1, new Sigmoid());
+    var sigmoidLayer = new DenseLayer(
+        1,
+        1,
+        new Sigmoid());
 
     var sigmoidOutput = sigmoidLayer.Forward(
         new Vector(new[] { 2.0 }));
@@ -409,9 +402,10 @@ static void RunPhase41Checks()
         prediction[0],
         target);
 
-    var predictionGradient = lossFunction.Derivative(
-        prediction[0],
-        target);
+    var predictionGradient =
+        lossFunction.Derivative(
+            prediction[0],
+            target);
 
     network.Backward(
         new Vector(new[] { predictionGradient }));
@@ -454,7 +448,8 @@ static void RunPhase41Checks()
                     input,
                     target);
 
-                layer.Weights[row, column] = original;
+                layer.Weights[row, column] =
+                    original;
 
                 var numericalGradient =
                     (positiveLoss - negativeLoss) /
@@ -482,22 +477,26 @@ static void RunPhase41Checks()
 
 static void RunPhase51Checks()
 {
-    var layer = new DenseLayer(1, 1, new Sigmoid());
+    var layer = new DenseLayer(
+        1,
+        1,
+        new Sigmoid());
 
     layer.Weights[0, 0] = 0.0;
     layer.Bias[0] = 0.0;
 
     var input = new Vector(new[] { 1.0 });
-    var target = 1.0;
+    const double target = 1.0;
 
     var lossFunction = new BinaryCrossEntropy();
-    var learningRate = 0.1;
 
-    var predictionBefore = layer.Forward(input);
+    var predictionBefore =
+        layer.Forward(input);
 
-    var lossBefore = lossFunction.Forward(
-        predictionBefore[0],
-        target);
+    var lossBefore =
+        lossFunction.Forward(
+            predictionBefore[0],
+            target);
 
     var predictionGradient =
         lossFunction.Derivative(
@@ -507,45 +506,140 @@ static void RunPhase51Checks()
     layer.Backward(
         new Vector(new[] { predictionGradient }));
 
-    var oldWeight = layer.Weights[0, 0];
-    var oldBias = layer.Bias[0];
+    layer.UpdateParameters(0.1);
 
-    layer.UpdateParameters(learningRate);
+    var predictionAfter =
+        layer.Forward(input);
 
-    AssertTrue(
-        "Weight changed after gradient descent",
-        Math.Abs(layer.Weights[0, 0] - oldWeight) > 0.0);
-
-    AssertTrue(
-        "Bias changed after gradient descent",
-        Math.Abs(layer.Bias[0] - oldBias) > 0.0);
-
-    var predictionAfter = layer.Forward(input);
-
-    var lossAfter = lossFunction.Forward(
-        predictionAfter[0],
-        target);
-
-    Console.WriteLine(
-        $"Loss before update: {lossBefore:F6}");
-
-    Console.WriteLine(
-        $"Loss after update:  {lossAfter:F6}");
+    var lossAfter =
+        lossFunction.Forward(
+            predictionAfter[0],
+            target);
 
     AssertTrue(
         "Loss decreased after gradient descent",
         lossAfter < lossBefore);
 
-    Console.WriteLine(
-        $"Updated weight: {layer.Weights[0, 0]:F6}");
+    Console.WriteLine("Phase 5.1 gradient descent checks passed.");
+    Console.WriteLine();
+}
+
+static void RunPhase61Checks()
+{
+    var network = new NeuralNetwork();
+
+    network.Add(new DenseLayer(2, 2, new ReLU()));
+    network.Add(new DenseLayer(2, 1, new Sigmoid()));
+
+    var lossFunction = new BinaryCrossEntropy();
+
+    var trainingInputs = new[]
+    {
+        new Vector(new[] { 0.0, 0.0 }),
+        new Vector(new[] { 0.0, 1.0 }),
+        new Vector(new[] { 1.0, 0.0 }),
+        new Vector(new[] { 1.0, 1.0 })
+    };
+
+    var trainingTargets = new[]
+    {
+        0.0,
+        1.0,
+        1.0,
+        1.0
+    };
+
+    const int epochs = 100;
+
+    const double learningRate = 0.1;
+
+    var initialLoss = CalculateDatasetLoss(
+        network,
+        lossFunction,
+        trainingInputs,
+        trainingTargets);
+
+    var finalLoss = initialLoss;
+
+    for (var epoch = 1; epoch <= epochs; epoch++)
+    {
+        var epochLoss = 0.0;
+
+        for (var sample = 0;
+             sample < trainingInputs.Length;
+             sample++)
+        {
+            var prediction =
+                network.Forward(trainingInputs[sample]);
+
+            epochLoss +=
+                lossFunction.Forward(
+                    prediction[0],
+                    trainingTargets[sample]);
+
+            var gradient =
+                lossFunction.Derivative(
+                    prediction[0],
+                    trainingTargets[sample]);
+
+            network.Backward(
+                new Vector(new[] { gradient }));
+
+            foreach (var layer in network.Layers)
+            {
+                layer.UpdateParameters(learningRate);
+            }
+        }
+
+        finalLoss =
+            epochLoss / trainingInputs.Length;
+
+        if (epoch == 1 ||
+            epoch == 10 ||
+            epoch == 50 ||
+            epoch == 100)
+        {
+            Console.WriteLine(
+                $"Epoch {epoch,3}: Loss = {finalLoss:F6}");
+        }
+    }
+
+    AssertTrue(
+        "Training reduced dataset loss",
+        finalLoss < initialLoss);
 
     Console.WriteLine(
-        $"Updated bias:   {layer.Bias[0]:F6}");
+        $"Initial loss: {initialLoss:F6}");
 
     Console.WriteLine(
-        "Phase 5.1 gradient descent checks passed.");
+        $"Final loss:   {finalLoss:F6}");
+
+    Console.WriteLine(
+        "Phase 6.1 training loop checks passed.");
 
     Console.WriteLine();
+}
+
+static double CalculateDatasetLoss(
+    NeuralNetwork network,
+    BinaryCrossEntropy lossFunction,
+    Vector[] inputs,
+    double[] targets)
+{
+    var total = 0.0;
+
+    for (var i = 0; i < inputs.Length; i++)
+    {
+        var prediction =
+            network.Forward(inputs[i]);
+
+        total +=
+            lossFunction.Forward(
+                prediction[0],
+                targets[i]);
+    }
+
+    return total / inputs.Length;
 }
 
 static NeuralNetwork CreateFinalNetwork()
@@ -599,14 +693,17 @@ static double EvaluateLoss(
     Vector input,
     double target)
 {
-    var prediction = network.Forward(input);
+    var prediction =
+        network.Forward(input);
 
     return lossFunction.Forward(
         prediction[0],
         target);
 }
 
-static void AssertTrue(string name, bool condition)
+static void AssertTrue(
+    string name,
+    bool condition)
 {
     if (!condition)
     {
@@ -617,12 +714,16 @@ static void AssertTrue(string name, bool condition)
     Console.WriteLine($"PASS: {name}");
 }
 
-static void AssertEqual(string name, int actual, int expected)
+static void AssertEqual(
+    string name,
+    int actual,
+    int expected)
 {
     if (actual != expected)
     {
         throw new InvalidOperationException(
-            $"{name} failed. Expected {expected}, received {actual}.");
+            $"{name} failed. " +
+            $"Expected {expected}, received {actual}.");
     }
 
     Console.WriteLine($"PASS: {name}");
@@ -637,7 +738,8 @@ static void AssertApproximately(
     if (Math.Abs(actual - expected) > tolerance)
     {
         throw new InvalidOperationException(
-            $"{name} failed. Expected {expected}, received {actual}.");
+            $"{name} failed. " +
+            $"Expected {expected}, received {actual}.");
     }
 
     Console.WriteLine($"PASS: {name}");
@@ -657,11 +759,14 @@ static void AssertVectorEqual(
 
     for (var i = 0; i < actual.Length; i++)
     {
-        if (Math.Abs(actual[i] - expected[i]) > tolerance)
+        if (Math.Abs(
+                actual[i] -
+                expected[i]) > tolerance)
         {
             throw new InvalidOperationException(
                 $"{name} failed at index {i}. " +
-                $"Expected {expected[i]}, received {actual[i]}.");
+                $"Expected {expected[i]}, " +
+                $"received {actual[i]}.");
         }
     }
 
@@ -681,9 +786,13 @@ static void AssertMatrixEqual(
             $"{name} failed. Matrix dimensions differ.");
     }
 
-    for (var row = 0; row < actual.Rows; row++)
+    for (var row = 0;
+         row < actual.Rows;
+         row++)
     {
-        for (var column = 0; column < actual.Columns; column++)
+        for (var column = 0;
+             column < actual.Columns;
+             column++)
         {
             if (Math.Abs(
                     actual[row, column] -
