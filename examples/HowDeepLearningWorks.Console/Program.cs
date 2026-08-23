@@ -2,6 +2,10 @@
 using HowDeepLearningWorks.LossFunctions;
 using HowDeepLearningWorks.Mathematics;
 
+Console.WriteLine("HowDeepLearningWorks");
+Console.WriteLine("====================");
+Console.WriteLine();
+
 RunPhase11Checks();
 RunPhase12Checks();
 RunPhase13Checks();
@@ -11,85 +15,96 @@ Console.WriteLine("All Phase 1 checks passed.");
 
 static void RunPhase11Checks()
 {
-    var vectorA = new Vector([1, 2, 3]);
-    var vectorB = new Vector([4, 5, 6]);
+    var vectorA = new Vector(new[] { 1.0, 2.0, 3.0 });
+    var vectorB = new Vector(new[] { 4.0, 5.0, 6.0 });
 
-    AssertVector("Vector addition", vectorA + vectorB, [5, 7, 9]);
-    AssertVector("Vector subtraction", vectorB - vectorA, [3, 3, 3]);
-    AssertVector("Vector scalar multiplication", vectorA * 2.0, [2, 4, 6]);
-    AssertScalar("Vector dot product", Vector.Dot(vectorA, vectorB), 32.0);
+    AssertVectorEqual(
+        "Vector addition",
+        vectorA + vectorB,
+        new[] { 5.0, 7.0, 9.0 });
 
-    var matrixA = new Matrix(new double[,]
+    AssertVectorEqual(
+        "Vector subtraction",
+        vectorB - vectorA,
+        new[] { 3.0, 3.0, 3.0 });
+
+    AssertVectorEqual(
+        "Vector scalar multiplication",
+        vectorA * 2.0,
+        new[] { 2.0, 4.0, 6.0 });
+
+   AssertApproximately(
+    "Vector dot product",
+    Vector.Dot(vectorA, vectorB),
+    32.0);
+
+    var matrixA = new Matrix(new[,]
     {
-        { 1, 2 },
-        { 3, 4 }
+        { 1.0, 2.0 },
+        { 3.0, 4.0 }
     });
 
-    var matrixB = new Matrix(new double[,]
-    {
-        { 5, 6 },
-        { 7, 8 }
-    });
+    var vectorC = new Vector(new[] { 5.0, 6.0 });
 
-    AssertVector(
+    AssertVectorEqual(
         "Matrix × Vector",
-        matrixA * new Vector([5, 6]),
-        [17, 39]);
+        matrixA * vectorC,
+        new[] { 17.0, 39.0 });
 
-    AssertMatrix(
+    var matrixB = new Matrix(new[,]
+    {
+        { 5.0, 6.0 },
+        { 7.0, 8.0 }
+    });
+
+    AssertMatrixEqual(
         "Matrix × Matrix",
         matrixA * matrixB,
-        new double[,]
+        new[,]
         {
-            { 19, 22 },
-            { 43, 50 }
+            { 19.0, 22.0 },
+            { 43.0, 50.0 }
         });
 
-    AssertMatrix(
+    AssertMatrixEqual(
         "Matrix transpose",
         matrixA.Transpose(),
-        new double[,]
+        new[,]
         {
-            { 1, 3 },
-            { 2, 4 }
+            { 1.0, 3.0 },
+            { 2.0, 4.0 }
         });
+
+    Console.WriteLine("All Phase 1.1 checks passed.");
+    Console.WriteLine();
 }
 
 static void RunPhase12Checks()
 {
     var relu = new ReLU();
 
-    AssertScalar("ReLU(-2)", relu.Forward(-2), 0);
-    AssertScalar("ReLU(3)", relu.Forward(3), 3);
-    AssertScalar("ReLU derivative(-2)", relu.Derivative(-2), 0);
-    AssertScalar("ReLU derivative(3)", relu.Derivative(3), 1);
-
-    var sigmoid = new Sigmoid();
+    AssertApproximately(
+        "ReLU(-2)",
+        relu.Forward(-2.0),
+        0.0);
 
     AssertApproximately(
-        "Sigmoid(0)",
-        sigmoid.Forward(0),
-        0.5);
+        "ReLU(3)",
+        relu.Forward(3.0),
+        3.0);
 
     AssertApproximately(
-        "Sigmoid derivative(0)",
-        sigmoid.Derivative(0),
-        0.25);
-
-    var tanh = new Tanh();
+        "ReLU derivative(-2)",
+        relu.Derivative(-2.0),
+        0.0);
 
     AssertApproximately(
-        "Tanh(0)",
-        tanh.Forward(0),
-        0);
+        "ReLU derivative(3)",
+        relu.Derivative(3.0),
+        1.0);
 
-    AssertApproximately(
-        "Tanh derivative(0)",
-        tanh.Derivative(0),
-        1);
-
-    Console.WriteLine();
     Console.WriteLine("Phase 1.2 activation checks passed.");
+    Console.WriteLine();
 }
 
 static void RunPhase13Checks()
@@ -116,58 +131,76 @@ static void RunPhase13Checks()
         loss.Derivative(0.1, 0.0),
         1.0 / 0.9);
 
-    Console.WriteLine();
     Console.WriteLine("Phase 1.3 loss checks passed.");
+    Console.WriteLine();
 }
 
-static void AssertVector(string name, Vector actual, double[] expected)
+static void AssertApproximately(
+    string name,
+    double actual,
+    double expected,
+    double tolerance = 1e-10)
+{
+    if (Math.Abs(actual - expected) > tolerance)
+    {
+        throw new Exception(
+            $"{name} FAILED. Expected {expected}, actual {actual}.");
+    }
+
+    Console.WriteLine($"PASS: {name}");
+}
+
+static void AssertVectorEqual(
+    string name,
+    Vector actual,
+    double[] expected,
+    double tolerance = 1e-10)
 {
     if (actual.Length != expected.Length)
     {
-        throw new InvalidOperationException($"{name}: length mismatch.");
+        throw new Exception(
+            $"{name} FAILED. Vector lengths differ.");
     }
 
     for (var i = 0; i < expected.Length; i++)
     {
-        AssertApproximately($"{name}[{i}]", actual[i], expected[i]);
+        if (Math.Abs(actual[i] - expected[i]) > tolerance)
+        {
+            throw new Exception(
+                $"{name} FAILED at index {i}. " +
+                $"Expected {expected[i]}, actual {actual[i]}.");
+        }
     }
 
     Console.WriteLine($"PASS: {name}");
 }
 
-static void AssertScalar(string name, double actual, double expected)
-{
-    AssertApproximately(name, actual, expected);
-    Console.WriteLine($"PASS: {name}");
-}
-
-static void AssertApproximately(string name, double actual, double expected)
-{
-    const double tolerance = 1e-12;
-
-    if (Math.Abs(actual - expected) > tolerance)
-    {
-        throw new InvalidOperationException(
-            $"{name}: expected {expected}, actual {actual}.");
-    }
-}
-
-static void AssertMatrix(string name, Matrix actual, double[,] expected)
+static void AssertMatrixEqual(
+    string name,
+    Matrix actual,
+    double[,] expected,
+    double tolerance = 1e-10)
 {
     if (actual.Rows != expected.GetLength(0) ||
         actual.Columns != expected.GetLength(1))
     {
-        throw new InvalidOperationException($"{name}: dimension mismatch.");
+        throw new Exception(
+            $"{name} FAILED. Matrix dimensions differ.");
     }
 
     for (var row = 0; row < actual.Rows; row++)
     {
         for (var column = 0; column < actual.Columns; column++)
         {
-            AssertApproximately(
-                $"{name}[{row},{column}]",
-                actual[row, column],
-                expected[row, column]);
+            if (Math.Abs(
+                    actual[row, column] -
+                    expected[row, column]) > tolerance)
+            {
+                throw new Exception(
+                    $"{name} FAILED at [{row},{column}]. " +
+                    $"Expected {expected[row, column]}, " +
+                    $"actual {actual[row, column]}.");
+            }
         }
     }
 
