@@ -15,9 +15,10 @@ RunPhase22Checks();
 RunPhase23Checks();
 RunPhase31Checks();
 RunPhase32Checks();
+RunPhase41Checks();
 
 Console.WriteLine();
-Console.WriteLine("All Phase 3 checks passed.");
+Console.WriteLine("All Phase 4 checks passed.");
 
 static void RunPhase11Checks()
 {
@@ -91,17 +92,25 @@ static void RunPhase13Checks()
 {
     var loss = new BinaryCrossEntropy();
 
-    AssertApproximately("BCE(0.9, 1)",
-        loss.Forward(0.9, 1.0), -Math.Log(0.9));
+    AssertApproximately(
+        "BCE(0.9, 1)",
+        loss.Forward(0.9, 1.0),
+        -Math.Log(0.9));
 
-    AssertApproximately("BCE(0.1, 0)",
-        loss.Forward(0.1, 0.0), -Math.Log(0.9));
+    AssertApproximately(
+        "BCE(0.1, 0)",
+        loss.Forward(0.1, 0.0),
+        -Math.Log(0.9));
 
-    AssertApproximately("BCE derivative(0.9, 1)",
-        loss.Derivative(0.9, 1.0), -1.0 / 0.9);
+    AssertApproximately(
+        "BCE derivative(0.9, 1)",
+        loss.Derivative(0.9, 1.0),
+        -1.0 / 0.9);
 
-    AssertApproximately("BCE derivative(0.1, 0)",
-        loss.Derivative(0.1, 0.0), 1.0 / 0.9);
+    AssertApproximately(
+        "BCE derivative(0.1, 0)",
+        loss.Derivative(0.1, 0.0),
+        1.0 / 0.9);
 
     Console.WriteLine("Phase 1.3 loss checks passed.");
     Console.WriteLine();
@@ -123,7 +132,8 @@ static void RunPhase21Checks()
     var input = new Vector(new[] { 2.0, 3.0 });
     var output = layer.Forward(input);
 
-    AssertVectorEqual("DenseLayer forward with zero weights",
+    AssertVectorEqual(
+        "DenseLayer forward with zero weights",
         output,
         new Vector(new[] { 0.0, 0.0, 0.0 }));
 
@@ -147,7 +157,8 @@ static void RunPhase22Checks()
 
     var forward = layer.Forward(input);
 
-    AssertVectorEqual("DenseLayer forward",
+    AssertVectorEqual(
+        "DenseLayer forward",
         forward,
         new Vector(new[] { 8.5, 19.0 }));
 
@@ -155,7 +166,8 @@ static void RunPhase22Checks()
 
     var inputGradient = layer.Backward(outputGradient);
 
-    AssertMatrixEqual("DenseLayer weight gradients",
+    AssertMatrixEqual(
+        "DenseLayer weight gradients",
         layer.WeightGradients,
         new Matrix(new double[,]
         {
@@ -163,11 +175,13 @@ static void RunPhase22Checks()
             { 0.4, 0.6 }
         }));
 
-    AssertVectorEqual("DenseLayer bias gradients",
+    AssertVectorEqual(
+        "DenseLayer bias gradients",
         layer.BiasGradients,
         new Vector(new[] { 0.1, 0.2 }));
 
-    AssertVectorEqual("DenseLayer input gradients",
+    AssertVectorEqual(
+        "DenseLayer input gradients",
         inputGradient,
         new Vector(new[] { 0.7, 1.0 }));
 
@@ -180,20 +194,24 @@ static void RunPhase23Checks()
     var network = new NeuralNetwork();
 
     var firstLayer = new DenseLayer(2, 2);
+
     firstLayer.Weights[0, 0] = 1.0;
     firstLayer.Weights[0, 1] = 2.0;
     firstLayer.Weights[1, 0] = 3.0;
     firstLayer.Weights[1, 1] = 4.0;
 
     var secondLayer = new DenseLayer(2, 1);
+
     secondLayer.Weights[0, 0] = 5.0;
     secondLayer.Weights[0, 1] = 6.0;
 
     network.Add(firstLayer);
     network.Add(secondLayer);
 
-    AssertEqual("NeuralNetwork layer count",
-        network.Layers.Count, 2);
+    AssertEqual(
+        "NeuralNetwork layer count",
+        network.Layers.Count,
+        2);
 
     var input = new Vector(new[] { 1.0, 2.0 });
 
@@ -303,19 +321,15 @@ static void RunPhase31Checks()
         sigmoidInputGradient[0],
         0.0);
 
-    Console.WriteLine("Phase 3.1 activation-aware dense layer checks passed.");
+    Console.WriteLine(
+        "Phase 3.1 activation-aware dense layer checks passed.");
+
     Console.WriteLine();
 }
 
 static void RunPhase32Checks()
 {
-    var network = new NeuralNetwork();
-
-    network.Add(new DenseLayer(4, 8, new ReLU()));
-    network.Add(new DenseLayer(8, 8, new ReLU()));
-    network.Add(new DenseLayer(8, 6, new ReLU()));
-    network.Add(new DenseLayer(6, 4, new ReLU()));
-    network.Add(new DenseLayer(4, 1, new Sigmoid()));
+    var network = CreateFinalNetwork();
 
     AssertEqual(
         "Final network layer count",
@@ -383,6 +397,171 @@ static void RunPhase32Checks()
         "Phase 3.2 final network architecture checks passed.");
 
     Console.WriteLine();
+}
+
+static void RunPhase41Checks()
+{
+    const double epsilon = 1e-5;
+    const double tolerance = 1e-4;
+
+    var input = new Vector(new[]
+    {
+        0.5,
+        0.75,
+        1.0,
+        1.25
+    });
+
+    const double target = 1.0;
+
+    var lossFunction = new BinaryCrossEntropy();
+    var network = CreateGradientCheckNetwork();
+
+    var prediction = network.Forward(input);
+
+    var loss = lossFunction.Forward(
+        prediction[0],
+        target);
+
+    var predictionGradient = lossFunction.Derivative(
+        prediction[0],
+        target);
+
+    network.Backward(
+        new Vector(new[] { predictionGradient }));
+
+    AssertTrue(
+        "Gradient checking loss is finite",
+        double.IsFinite(loss));
+
+    var checkedWeights = 0;
+
+    for (var layerIndex = 0;
+         layerIndex < network.Layers.Count;
+         layerIndex++)
+    {
+        var layer = network.Layers[layerIndex];
+
+        for (var row = 0; row < layer.Weights.Rows; row++)
+        {
+            for (var column = 0;
+                 column < layer.Weights.Columns;
+                 column++)
+            {
+                var original = layer.Weights[row, column];
+
+                layer.Weights[row, column] = original + epsilon;
+
+                var positiveLoss = EvaluateLoss(
+                    network,
+                    lossFunction,
+                    input,
+                    target);
+
+                layer.Weights[row, column] = original - epsilon;
+
+                var negativeLoss = EvaluateLoss(
+                    network,
+                    lossFunction,
+                    input,
+                    target);
+
+                layer.Weights[row, column] = original;
+
+                var numericalGradient =
+                    (positiveLoss - negativeLoss) /
+                    (2.0 * epsilon);
+
+                var analyticalGradient =
+                    layer.WeightGradients[row, column];
+
+                AssertApproximately(
+                    $"Gradient L{layerIndex + 1} W[{row},{column}]",
+                    analyticalGradient,
+                    numericalGradient,
+                    tolerance);
+
+                checkedWeights++;
+            }
+        }
+    }
+
+    Console.WriteLine(
+        $"Gradient checking passed for {checkedWeights} weights.");
+
+    Console.WriteLine(
+        "Phase 4.1 numerical gradient checking passed.");
+
+    Console.WriteLine();
+}
+
+static NeuralNetwork CreateFinalNetwork()
+{
+    var network = new NeuralNetwork();
+
+    network.Add(new DenseLayer(4, 8, new ReLU()));
+    network.Add(new DenseLayer(8, 8, new ReLU()));
+    network.Add(new DenseLayer(8, 6, new ReLU()));
+    network.Add(new DenseLayer(6, 4, new ReLU()));
+    network.Add(new DenseLayer(4, 1, new Sigmoid()));
+
+    return network;
+}
+
+static NeuralNetwork CreateGradientCheckNetwork()
+{
+    var network = CreateFinalNetwork();
+
+    for (var layerIndex = 0;
+         layerIndex < network.Layers.Count;
+         layerIndex++)
+    {
+        var layer = network.Layers[layerIndex];
+
+        for (var row = 0; row < layer.Weights.Rows; row++)
+        {
+            for (var column = 0;
+                 column < layer.Weights.Columns;
+                 column++)
+            {
+                layer.Weights[row, column] =
+                    0.01 +
+                    (0.001 * (layerIndex + 1)) +
+                    (0.0001 * (row + column));
+            }
+        }
+
+        for (var i = 0; i < layer.Bias.Length; i++)
+        {
+            layer.Bias[i] = 0.1;
+        }
+    }
+
+    return network;
+}
+
+static double EvaluateLoss(
+    NeuralNetwork network,
+    BinaryCrossEntropy lossFunction,
+    Vector input,
+    double target)
+{
+    var prediction = network.Forward(input);
+
+    return lossFunction.Forward(
+        prediction[0],
+        target);
+}
+
+static void AssertTrue(string name, bool condition)
+{
+    if (!condition)
+    {
+        throw new InvalidOperationException(
+            $"{name} failed.");
+    }
+
+    Console.WriteLine($"PASS: {name}");
 }
 
 static void AssertEqual(string name, int actual, int expected)
@@ -453,7 +632,9 @@ static void AssertMatrixEqual(
     {
         for (var column = 0; column < actual.Columns; column++)
         {
-            if (Math.Abs(actual[row, column] - expected[row, column]) > tolerance)
+            if (Math.Abs(
+                    actual[row, column] -
+                    expected[row, column]) > tolerance)
             {
                 throw new InvalidOperationException(
                     $"{name} failed at [{row}, {column}]. " +
