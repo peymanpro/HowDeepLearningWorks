@@ -1,4 +1,4 @@
-using HowDeepLearningWorks.ActivationFunctions;
+ï»¿using HowDeepLearningWorks.ActivationFunctions;
 using HowDeepLearningWorks.LossFunctions;
 using HowDeepLearningWorks.Mathematics;
 using HowDeepLearningWorks.NeuralNetworks;
@@ -13,9 +13,10 @@ RunPhase13Checks();
 RunPhase21Checks();
 RunPhase22Checks();
 RunPhase23Checks();
+RunPhase31Checks();
 
 Console.WriteLine();
-Console.WriteLine("All Phase 2 checks passed.");
+Console.WriteLine("All Phase 3 checks passed.");
 
 static void RunPhase11Checks()
 {
@@ -42,7 +43,7 @@ static void RunPhase11Checks()
 
     var vector = new Vector(new[] { 5.0, 6.0 });
 
-    AssertVectorEqual("Matrix × Vector",
+    AssertVectorEqual("Matrix Ã— Vector",
         matrix * vector,
         new Vector(new[] { 17.0, 39.0 }));
 
@@ -52,7 +53,7 @@ static void RunPhase11Checks()
         { 7.0, 8.0 }
     });
 
-    AssertMatrixEqual("Matrix × Matrix",
+    AssertMatrixEqual("Matrix Ã— Matrix",
         matrix * matrixRight,
         new Matrix(new double[,]
         {
@@ -199,12 +200,6 @@ static void RunPhase23Checks()
 
     var output = network.Forward(input);
 
-    // First layer:
-    // [1 2] [1] = 5
-    // [3 4] [2] = 11
-    //
-    // Second layer:
-    // [5 6] [5] = 25 + 66 = 91
     AssertVectorEqual(
         "NeuralNetwork forward propagation",
         output,
@@ -214,11 +209,6 @@ static void RunPhase23Checks()
 
     var inputGradient = network.Backward(outputGradient);
 
-    // d(second layer input) = [5, 6]
-    //
-    // d(first layer input):
-    // [1 3] [5] = 5 + 18 = 23
-    // [2 4] [6] = 30 + 24 = 34
     AssertVectorEqual(
         "NeuralNetwork backward propagation",
         inputGradient,
@@ -252,6 +242,76 @@ static void RunPhase23Checks()
         new Vector(new[] { 1.0 }));
 
     Console.WriteLine("Phase 2.3 neural network checks passed.");
+    Console.WriteLine();
+}
+
+static void RunPhase31Checks()
+{
+    var reluLayer = new DenseLayer(2, 2, new ReLU());
+
+    reluLayer.Weights[0, 0] = 1.0;
+    reluLayer.Weights[0, 1] = -1.0;
+    reluLayer.Weights[1, 0] = -2.0;
+    reluLayer.Weights[1, 1] = 1.0;
+
+    var input = new Vector(new[] { 2.0, 1.0 });
+
+    var output = reluLayer.Forward(input);
+
+    // z1 = 2 - 1 = 1  -> ReLU = 1
+    // z2 = -4 + 1 = -3 -> ReLU = 0
+    AssertVectorEqual(
+        "DenseLayer ReLU forward",
+        output,
+        new Vector(new[] { 1.0, 0.0 }));
+
+    // Incoming gradient is [1, 1].
+    // ReLU derivative keeps gradient for z1
+    // and removes it for z2.
+    var inputGradient = reluLayer.Backward(
+        new Vector(new[] { 1.0, 1.0 }));
+
+    AssertVectorEqual(
+        "DenseLayer ReLU backward",
+        inputGradient,
+        new Vector(new[] { 1.0, -1.0 }));
+
+    AssertMatrixEqual(
+        "DenseLayer ReLU weight gradients",
+        reluLayer.WeightGradients,
+        new Matrix(new double[,]
+        {
+            { 2.0, 1.0 },
+            { 0.0, 0.0 }
+        }));
+
+    AssertVectorEqual(
+        "DenseLayer ReLU bias gradients",
+        reluLayer.BiasGradients,
+        new Vector(new[] { 1.0, 0.0 }));
+
+    var sigmoidLayer = new DenseLayer(1, 1, new Sigmoid());
+
+    sigmoidLayer.Weights[0, 0] = 0.0;
+    sigmoidLayer.Bias[0] = 0.0;
+
+    var sigmoidOutput = sigmoidLayer.Forward(
+        new Vector(new[] { 2.0 }));
+
+    AssertApproximately(
+        "DenseLayer Sigmoid forward",
+        sigmoidOutput[0],
+        0.5);
+
+    var sigmoidInputGradient = sigmoidLayer.Backward(
+        new Vector(new[] { 1.0 }));
+
+    AssertApproximately(
+        "DenseLayer Sigmoid backward",
+        sigmoidInputGradient[0],
+        0.0);
+
+    Console.WriteLine("Phase 3.1 activation-aware dense layer checks passed.");
     Console.WriteLine();
 }
 
