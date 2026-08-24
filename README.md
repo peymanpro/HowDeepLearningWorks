@@ -1,303 +1,277 @@
-@'
 # HowDeepLearningWorks
 
-A from-scratch Deep Learning implementation in C# and .NET.
+> A from-scratch Deep Learning implementation in C# and .NET 8 that exposes the mathematics behind learning instead of hiding it behind a ready-made ML framework.
 
-## Goal
+## Overview
 
-The purpose of this project is to understand and implement the core mechanics of a neural network without using ready-made Machine Learning or Deep Learning frameworks.
+`HowDeepLearningWorks` is an educational neural-network implementation built from the mathematical foundations upward.
 
-The first version focuses on one concrete network:
+The project focuses on one question:
+
+**What actually happens to the weights when a neural network learns?**
+
+Instead of starting with a high-level API such as `Fit()` or `Predict()`, the implementation builds the underlying mechanics directly in C#:
+
+- Linear algebra
+- Activation functions and derivatives
+- Forward propagation
+- Loss calculation
+- Backpropagation
+- Gradient calculation
+- Gradient descent
+- Training
+- Test-set evaluation
+- Prediction and accuracy
+
+The project is intentionally small. Its purpose is to make the relationship between mathematics, algorithms, and software implementation easy to follow.
+
+## Network Architecture
+
+The current demonstration network is:
 
 ```text
-Input
-  |
-  v
-Hidden Layer 1
-  |
-  v
-Hidden Layer 2
-  |
-  v
-Hidden Layer 3
-  |
-  v
-Hidden Layer 4
-  |
-  v
-Output
+Input: 4 features
+        │
+        ▼
+   Dense 4 → 8
+     ReLU
+        │
+        ▼
+   Dense 8 → 8
+     ReLU
+        │
+        ▼
+   Dense 8 → 6
+     ReLU
+        │
+        ▼
+   Dense 6 → 4
+     ReLU
+        │
+        ▼
+   Dense 4 → 1
+    Sigmoid
+        │
+        ▼
+   Binary prediction
+```
 
-The network will support:
+## Learning Pipeline
 
-Forward propagation
-Activation functions
-Loss calculation
-Backpropagation
-Gradient calculation
-Weight and bias updates
-Training
-Test data evaluation
-Accuracy calculation
-Prediction
-Inspection of learned weights
-Network
-
-The initial neural network topology is:
-
-4 → 8 → 8 → 6 → 4 → 1
-
-The hidden layers use ReLU and the output layer uses Sigmoid for binary classification.
-
-Learning
-
-The training process is intentionally explicit:
-
+```text
 Input
   ↓
 Forward Propagation
   ↓
 Prediction
   ↓
-Loss
+Binary Cross Entropy
   ↓
 Backpropagation
   ↓
-Gradients
+Gradients (dW, db, dx)
   ↓
-Weight / Bias Update
+Gradient Descent
   ↓
-Next Epoch
+Updated Weights / Biases
+  ↓
+Next Training Step
+```
 
-The weight update follows gradient descent:
+For a dense layer:
 
-W_new = W_old - learningRate × gradient
+```text
+z  = W x + b
+a  = activation(z)
+```
 
-Project Structure
+During backpropagation:
+
+```text
+dW = dz · xᵀ
+db = dz
+dx = Wᵀ · dz
+```
+
+Parameter updates use gradient descent:
+
+```text
+W ← W - η dW
+b ← b - η db
+```
+
+## Verification
+
+The project validates the implementation at several levels.
+
+### Mathematical Operations
+
+Vector and matrix operations are tested, including:
+
+- Addition and subtraction
+- Scalar multiplication
+- Dot product
+- Matrix × vector
+- Matrix × matrix
+- Transpose
+
+### Activation Functions
+
+Implemented and tested:
+
+- ReLU
+- Sigmoid
+- Tanh
+
+Both function values and derivatives are covered.
+
+### Backpropagation
+
+The dense layer and multi-layer network calculate:
+
+```text
+dW
+db
+dx
+```
+
+and propagate gradients backward through the network.
+
+### Numerical Gradient Checking
+
+Analytical gradients are compared with numerical gradients using finite differences.
+
+The current verification checks **172 weights** across the five-layer network.
+
+### Training
+
+The training loop is verified by measuring the loss before and after training.
+
+### Train / Test Evaluation
+
+The demonstration uses separate training and test samples and reports predictions and classification accuracy on unseen test samples.
+
+The current demonstration reaches **100% accuracy on its small deterministic test set**. This result is only intended to verify the implementation pipeline; it is not a claim of real-world model performance.
+
+## Why Build It From Scratch?
+
+High-level ML libraries are useful because they hide implementation details and make production systems easier to build.
+
+This project has a different purpose: expose those details.
+
+The implementation deliberately does **not** depend on:
+
+- ML.NET
+- TensorFlow.NET
+- TorchSharp
+- Accord.NET
+- Other ready-made Deep Learning frameworks
+
+The mathematics is implemented directly in C#.
+
+## Project Structure
+
+```text
 HowDeepLearningWorks/
-│
 ├── src/
 │   └── HowDeepLearningWorks/
+│       ├── Mathematics/
+│       │   ├── Vector.cs
+│       │   └── Matrix.cs
+│       ├── ActivationFunctions/
+│       │   ├── IActivationFunction.cs
+│       │   ├── ReLU.cs
+│       │   ├── Sigmoid.cs
+│       │   └── Tanh.cs
+│       ├── LossFunctions/
+│       │   └── BinaryCrossEntropy.cs
+│       └── NeuralNetworks/
+│           ├── DenseLayer.cs
+│           └── NeuralNetwork.cs
 │
 ├── examples/
 │   └── HowDeepLearningWorks.Console/
-│
 ├── tests/
 │   └── HowDeepLearningWorks.Tests/
-│
 ├── docs/
 │   └── architecture/
 │       └── adr/
-│
 └── .github/
     └── workflows/
-Development Phases
-Phase 0
+```
 
-Project foundation and architecture.
+## Running the Demonstration
 
-Phase 1
+From the repository root:
 
-Mathematical core.
+```powershell
+dotnet restore examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj
 
-Phase 2
+dotnet build examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj --configuration Release
 
-Neuron and dense layer.
+dotnet run --project examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj --configuration Release
+```
 
-Phase 3
+The console demonstration runs the mathematical and neural-network checks and then performs training and test-set evaluation.
 
-Activation functions.
+## Design Principles
 
-Phase 4
+### Mathematics First
 
-Forward propagation.
+The implementation starts with vectors and matrices rather than a high-level neural-network abstraction.
 
-Phase 5
+### Explicit Learning Mechanics
 
-Loss and backpropagation.
+Forward propagation, loss, gradients, backpropagation, and parameter updates remain visible in the code.
 
-Phase 6
+### Small Architecture
 
-Gradient descent and parameter updates.
+Abstractions are introduced only where they represent a real variation point, such as activation functions.
 
-Phase 7
+### Verification Before Expansion
 
-Training engine.
+Each major capability is tested before the project moves to the next layer of complexity.
 
-Phase 8
+## Current Status
 
-Testing, evaluation and prediction.
+The first educational implementation is complete for the intended scope:
 
-Phase 9
+- [x] Mathematical core
+- [x] Activation functions
+- [x] Dense layer
+- [x] Forward propagation
+- [x] Backpropagation
+- [x] Numerical gradient checking
+- [x] Gradient descent
+- [x] Training loop
+- [x] Train/test evaluation
+- [x] Prediction
+- [x] Accuracy calculation
 
-Experiments and result visualization.
+The project intentionally stops here rather than turning into a general-purpose Deep Learning framework.
 
-Phase 10
+## What This Demonstrates
 
-Documentation and GitHub release.
+The value of this project is not the number of machine-learning APIs it contains.
 
-Constraints
-
-The implementation does not use:
-
-ML.NET
-TensorFlow.NET
-TorchSharp
-Accord.NET
-other ready-made Machine Learning / Deep Learning frameworks
-
-The neural-network mathematics is implemented directly in C#.
-
-Current Status
-
-Phase 0 is being completed.
-
-No neural-network implementation has been added yet.
-
-License
-
-MIT
-'@ | Set-Content -Encoding UTF8 README.md
-
-
-ADR:
-
-```powershell id="ztfwgh"
-@'
-# ADR-001: Initial Project Architecture
-
-## Status
-
-Accepted
-
-## Context
-
-The purpose of HowDeepLearningWorks is to demonstrate how a neural network works internally rather than to build a general-purpose Deep Learning framework.
-
-The first version therefore needs a small and understandable architecture.
-
-## Decision
-
-Use a small three-project structure:
+It demonstrates the complete path from mathematical reasoning to executable software:
 
 ```text
-HowDeepLearningWorks
-        ^
-        |
-HowDeepLearningWorks.Console
+Mathematics
+    ↓
+Algorithm
+    ↓
+Implementation
+    ↓
+Numerical Verification
+    ↓
+Training
+    ↓
+Evaluation
+```
 
-HowDeepLearningWorks.Tests
-        |
-        v
-HowDeepLearningWorks
+That connection is the core of `HowDeepLearningWorks`.
 
-The Core project contains the neural-network implementation.
+## License
 
-The Console project contains executable experiments.
-
-The Test project contains correctness tests.
-
-Initial Network
-
-The first network will use four hidden layers:
-
-4 → 8 → 8 → 6 → 4 → 1
-
-Hidden layers use ReLU.
-
-The output layer uses Sigmoid.
-
-Learning Algorithm
-
-The first implementation will use:
-
-Forward propagation
-Binary Cross Entropy
-Backpropagation
-Gradient descent
-
-Only one optimization algorithm is planned for the initial version.
-
-Additional optimizers are intentionally outside the first version.
-
-Design Patterns
-
-Patterns will only be used where they provide real value.
-
-An activation-function abstraction is justified because the network must support different activation functions.
-
-A strategy-style abstraction may be introduced for activation functions or future optimization algorithms when the implementation reaches the relevant phase.
-
-No generic framework architecture will be introduced merely to increase abstraction.
-
-Consequences
-
-The project remains small enough to understand while still demonstrating the real mechanics of Deep Learning.
-
-The architecture can be expanded later if the actual implementation requires it.
-'@ | Set-Content -Encoding UTF8 docs/architecture/adr/ADR-001-initial-architecture.md
-
-
-License:
-
-```powershell id="go6gqy"
-@'
 MIT License
-
-Copyright (c) 2026 Peyman Salimi
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-'@ | Set-Content -Encoding UTF8 LICENSE
-
-CI:
-
-@'
-name: CI
-
-on:
-  push:
-    branches:
-      - main
-      - master
-  pull_request:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
-
-      - name: Restore Core
-        run: dotnet restore src/HowDeepLearningWorks/HowDeepLearningWorks.csproj
-
-      - name: Restore Console
-        run: dotnet restore examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj
-
-      - name: Build Core
-        run: dotnet build src/HowDeepLearningWorks/HowDeepLearningWorks.csproj --configuration Release --no-restore
-
-      - name: Build Console
-        run: dotnet build examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj --configuration Release --no-restore
-'@ | Set-Content -Encoding UTF8 .github/workflows/ci.yml
