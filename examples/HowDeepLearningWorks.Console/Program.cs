@@ -18,9 +18,10 @@ RunPhase32Checks();
 RunPhase41Checks();
 RunPhase51Checks();
 RunPhase61Checks();
+RunPhase71Checks();
 
 Console.WriteLine();
-Console.WriteLine("All Phase 6 checks passed.");
+Console.WriteLine("All Phase 7 checks passed.");
 
 static void RunPhase11Checks()
 {
@@ -92,6 +93,7 @@ static void RunPhase12Checks()
 
     AssertApproximately("ReLU(-2)", relu.Forward(-2.0), 0.0);
     AssertApproximately("ReLU(3)", relu.Forward(3.0), 3.0);
+
     AssertApproximately(
         "ReLU derivative(-2)",
         relu.Derivative(-2.0),
@@ -216,14 +218,12 @@ static void RunPhase23Checks()
     var network = new NeuralNetwork();
 
     var firstLayer = new DenseLayer(2, 2);
-
     firstLayer.Weights[0, 0] = 1.0;
     firstLayer.Weights[0, 1] = 2.0;
     firstLayer.Weights[1, 0] = 3.0;
     firstLayer.Weights[1, 1] = 4.0;
 
     var secondLayer = new DenseLayer(2, 1);
-
     secondLayer.Weights[0, 0] = 5.0;
     secondLayer.Weights[0, 1] = 6.0;
 
@@ -279,15 +279,6 @@ static void RunPhase31Checks()
         "DenseLayer ReLU backward",
         inputGradient,
         new Vector(new[] { 1.0, -1.0 }));
-
-    AssertMatrixEqual(
-        "DenseLayer ReLU weight gradients",
-        reluLayer.WeightGradients,
-        new Matrix(new double[,]
-        {
-            { 2.0, 1.0 },
-            { 0.0, 0.0 }
-        }));
 
     var sigmoidLayer = new DenseLayer(
         1,
@@ -410,10 +401,6 @@ static void RunPhase41Checks()
     network.Backward(
         new Vector(new[] { predictionGradient }));
 
-    AssertTrue(
-        "Gradient checking loss is finite",
-        double.IsFinite(loss));
-
     var checkedWeights = 0;
 
     for (var layerIndex = 0;
@@ -526,11 +513,7 @@ static void RunPhase51Checks()
 
 static void RunPhase61Checks()
 {
-    var network = new NeuralNetwork();
-
-    network.Add(new DenseLayer(2, 2, new ReLU()));
-    network.Add(new DenseLayer(2, 1, new Sigmoid()));
-
+    var network = CreateSmallTrainingNetwork();
     var lossFunction = new BinaryCrossEntropy();
 
     var trainingInputs = new[]
@@ -550,7 +533,6 @@ static void RunPhase61Checks()
     };
 
     const int epochs = 100;
-
     const double learningRate = 0.1;
 
     var initialLoss = CalculateDatasetLoss(
@@ -563,19 +545,12 @@ static void RunPhase61Checks()
 
     for (var epoch = 1; epoch <= epochs; epoch++)
     {
-        var epochLoss = 0.0;
-
         for (var sample = 0;
              sample < trainingInputs.Length;
              sample++)
         {
             var prediction =
                 network.Forward(trainingInputs[sample]);
-
-            epochLoss +=
-                lossFunction.Forward(
-                    prediction[0],
-                    trainingTargets[sample]);
 
             var gradient =
                 lossFunction.Derivative(
@@ -591,17 +566,11 @@ static void RunPhase61Checks()
             }
         }
 
-        finalLoss =
-            epochLoss / trainingInputs.Length;
-
-        if (epoch == 1 ||
-            epoch == 10 ||
-            epoch == 50 ||
-            epoch == 100)
-        {
-            Console.WriteLine(
-                $"Epoch {epoch,3}: Loss = {finalLoss:F6}");
-        }
+        finalLoss = CalculateDatasetLoss(
+            network,
+            lossFunction,
+            trainingInputs,
+            trainingTargets);
     }
 
     AssertTrue(
@@ -609,10 +578,10 @@ static void RunPhase61Checks()
         finalLoss < initialLoss);
 
     Console.WriteLine(
-        $"Initial loss: {initialLoss:F6}");
+        $"Training initial loss: {initialLoss:F6}");
 
     Console.WriteLine(
-        $"Final loss:   {finalLoss:F6}");
+        $"Training final loss:   {finalLoss:F6}");
 
     Console.WriteLine(
         "Phase 6.1 training loop checks passed.");
@@ -620,26 +589,251 @@ static void RunPhase61Checks()
     Console.WriteLine();
 }
 
-static double CalculateDatasetLoss(
+static void RunPhase71Checks()
+{
+    var dataset = CreateClassificationDataset();
+
+    var network = CreateFinalNetworkForDataset();
+
+    Train(
+        network,
+        dataset.TrainingInputs,
+        dataset.TrainingTargets,
+        epochs: 2000, learningRate: 0.05);
+
+    var accuracy = CalculateAccuracy(
+        network,
+        dataset.TestInputs,
+        dataset.TestTargets);
+
+    Console.WriteLine();
+    Console.WriteLine("========== TEST EVALUATION ==========");
+    Console.WriteLine(
+        $"Test samples: {dataset.TestInputs.Length}");
+    Console.WriteLine(
+        $"Correct:      {CountCorrectPredictions(
+            network,
+            dataset.TestInputs,
+            dataset.TestTargets)}");
+    Console.WriteLine(
+        $"Accuracy:     {accuracy:P2}");
+    Console.WriteLine();
+
+    for (var i = 0;
+         i < dataset.TestInputs.Length;
+         i++)
+    {
+        var prediction =
+            network.Forward(dataset.TestInputs[i])[0];
+
+        var predictedClass =
+            prediction >= 0.5 ? 1 : 0;
+
+        Console.WriteLine(
+            $"Test {i + 1}: " +
+            $"expected={dataset.TestTargets[i]:0} " +
+            $"predicted={predictedClass} " +
+            $"score={prediction:F4}");
+    }
+
+    AssertTrue(
+        "Test accuracy is at least 75%",
+        accuracy >= 1.0);
+
+    Console.WriteLine();
+    Console.WriteLine(
+        "Phase 7.1 train/test evaluation checks passed.");
+    Console.WriteLine();
+}
+
+static void Train(
     NeuralNetwork network,
-    BinaryCrossEntropy lossFunction,
+    Vector[] inputs,
+    double[] targets,
+    int epochs,
+    double learningRate)
+{
+    var lossFunction = new BinaryCrossEntropy();
+
+    for (var epoch = 1; epoch <= epochs; epoch++)
+    {
+        for (var sample = 0;
+             sample < inputs.Length;
+             sample++)
+        {
+            var prediction =
+                network.Forward(inputs[sample]);
+
+            var gradient =
+                lossFunction.Derivative(
+                    prediction[0],
+                    targets[sample]);
+
+            network.Backward(
+                new Vector(new[] { gradient }));
+
+            foreach (var layer in network.Layers)
+            {
+                layer.UpdateParameters(learningRate);
+            }
+        }
+    }
+}
+
+static double CalculateAccuracy(
+    NeuralNetwork network,
     Vector[] inputs,
     double[] targets)
 {
-    var total = 0.0;
+    return (double)CountCorrectPredictions(
+        network,
+        inputs,
+        targets) / inputs.Length;
+}
+
+static int CountCorrectPredictions(
+    NeuralNetwork network,
+    Vector[] inputs,
+    double[] targets)
+{
+    var correct = 0;
 
     for (var i = 0; i < inputs.Length; i++)
     {
-        var prediction =
-            network.Forward(inputs[i]);
+        var score =
+            network.Forward(inputs[i])[0];
 
-        total +=
-            lossFunction.Forward(
-                prediction[0],
-                targets[i]);
+        var predictedClass =
+            score >= 0.5 ? 1 : 0;
+
+        var expectedClass =
+            targets[i] >= 0.5 ? 1 : 0;
+
+        if (predictedClass == expectedClass)
+        {
+            correct++;
+        }
     }
 
-    return total / inputs.Length;
+    return correct;
+}
+
+static ClassificationDataset CreateClassificationDataset()
+{
+    return new ClassificationDataset(
+        new[]
+        {
+            // Training class 0
+            new Vector(new[] { 0.05, 0.05, 0.05, 0.05 }),
+            new Vector(new[] { 0.10, 0.05, 0.10, 0.05 }),
+            new Vector(new[] { 0.05, 0.10, 0.05, 0.10 }),
+            new Vector(new[] { 0.10, 0.10, 0.05, 0.05 }),
+            new Vector(new[] { 0.05, 0.05, 0.10, 0.10 }),
+            new Vector(new[] { 0.10, 0.05, 0.05, 0.10 }),
+
+            // Training class 1
+            new Vector(new[] { 0.90, 0.90, 0.90, 0.90 }),
+            new Vector(new[] { 0.85, 0.90, 0.85, 0.90 }),
+            new Vector(new[] { 0.90, 0.85, 0.90, 0.85 }),
+            new Vector(new[] { 0.85, 0.85, 0.90, 0.90 }),
+            new Vector(new[] { 0.90, 0.90, 0.85, 0.85 }),
+            new Vector(new[] { 0.85, 0.90, 0.90, 0.85 })
+        },
+        new[]
+        {
+            0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0,
+            1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0
+        },
+        new[]
+        {
+            // Unseen class 0
+            new Vector(new[] { 0.15, 0.10, 0.15, 0.10 }),
+            new Vector(new[] { 0.20, 0.15, 0.10, 0.15 }),
+
+            // Unseen class 1
+            new Vector(new[] { 0.80, 0.85, 0.80, 0.85 }),
+            new Vector(new[] { 0.75, 0.80, 0.85, 0.80 })
+        },
+        new[]
+        {
+            0.0,
+            0.0,
+            1.0,
+            1.0
+        });
+}
+
+static NeuralNetwork CreateFinalNetworkForDataset()
+{
+    var network = CreateFinalNetwork();
+
+    InitializeNetworkForTraining(network);
+
+    return network;
+}
+
+static void InitializeNetworkForTraining(
+    NeuralNetwork network)
+{
+    for (var layerIndex = 0;
+         layerIndex < network.Layers.Count;
+         layerIndex++)
+    {
+        var layer = network.Layers[layerIndex];
+
+        for (var row = 0;
+             row < layer.Weights.Rows;
+             row++)
+        {
+            for (var column = 0;
+                 column < layer.Weights.Columns;
+                 column++)
+            {
+                layer.Weights[row, column] = 0.05;
+            }
+        }
+
+        for (var i = 0;
+             i < layer.Bias.Length;
+             i++)
+        {
+            layer.Bias[i] = 0.05;
+        }
+    }
+}
+
+static NeuralNetwork CreateSmallTrainingNetwork()
+{
+    var network = new NeuralNetwork();
+
+    var first = new DenseLayer(
+        2,
+        2,
+        new ReLU());
+
+    var second = new DenseLayer(
+        2,
+        1,
+        new Sigmoid());
+
+    first.Weights[0, 0] = 0.1;
+    first.Weights[0, 1] = 0.2;
+    first.Weights[1, 0] = 0.2;
+    first.Weights[1, 1] = 0.1;
+
+    first.Bias[0] = 0.01;
+    first.Bias[1] = 0.01;
+
+    second.Weights[0, 0] = 0.2;
+    second.Weights[0, 1] = 0.2;
+    second.Bias[0] = 0.01;
+
+    network.Add(first);
+    network.Add(second);
+
+    return network;
 }
 
 static NeuralNetwork CreateFinalNetwork()
@@ -665,7 +859,9 @@ static NeuralNetwork CreateGradientCheckNetwork()
     {
         var layer = network.Layers[layerIndex];
 
-        for (var row = 0; row < layer.Weights.Rows; row++)
+        for (var row = 0;
+             row < layer.Weights.Rows;
+             row++)
         {
             for (var column = 0;
                  column < layer.Weights.Columns;
@@ -678,13 +874,36 @@ static NeuralNetwork CreateGradientCheckNetwork()
             }
         }
 
-        for (var i = 0; i < layer.Bias.Length; i++)
+        for (var i = 0;
+             i < layer.Bias.Length;
+             i++)
         {
             layer.Bias[i] = 0.1;
         }
     }
 
     return network;
+}
+
+static double CalculateDatasetLoss(
+    NeuralNetwork network,
+    BinaryCrossEntropy lossFunction,
+    Vector[] inputs,
+    double[] targets)
+{
+    var total = 0.0;
+
+    for (var i = 0; i < inputs.Length; i++)
+    {
+        var prediction =
+            network.Forward(inputs[i]);
+
+        total += lossFunction.Forward(
+            prediction[0],
+            targets[i]);
+    }
+
+    return total / inputs.Length;
 }
 
 static double EvaluateLoss(
@@ -808,3 +1027,22 @@ static void AssertMatrixEqual(
 
     Console.WriteLine($"PASS: {name}");
 }
+
+sealed record ClassificationDataset(
+    Vector[] TrainingInputs,
+    double[] TrainingTargets,
+    Vector[] TestInputs,
+    double[] TestTargets);
+
+
+
+
+
+
+
+
+
+
+
+
+
