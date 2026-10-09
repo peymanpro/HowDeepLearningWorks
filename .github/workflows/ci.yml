@@ -51,6 +51,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create v1.1.0 \
-            --target "57c6494ee0eb2c0a18033b10c000396b3c3edca0" \
+            --target "${GITHUB_SHA}" \
             --title "HowDeepLearningWorks v1.1.0" \
             --notes-file docs/RELEASE-NOTES-v1.1.0.md
