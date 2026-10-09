@@ -1,277 +1,143 @@
 # HowDeepLearningWorks
 
-> A from-scratch Deep Learning implementation in C# and .NET 8 that exposes the mathematics behind learning instead of hiding it behind a ready-made ML framework.
+[![CI](https://github.com/peymanpro/HowDeepLearningWorks/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/peymanpro/HowDeepLearningWorks/actions/workflows/ci.yml)
+[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## Overview
+**Understand how neural networks learn by implementing the mathematics in C#—without hiding the mechanics behind a machine-learning framework.**
 
-`HowDeepLearningWorks` is an educational neural-network implementation built from the mathematical foundations upward.
+**HowDeepLearningWorks** is a small, from-scratch educational implementation of a dense neural network. It makes the path from linear algebra to training explicit: forward propagation, loss, backpropagation, numerical gradient checking, parameter updates, and evaluation.
 
-The project focuses on one question:
+The goal is understanding and verification, not competing with production libraries.
 
-**What actually happens to the weights when a neural network learns?**
+## What is implemented?
 
-Instead of starting with a high-level API such as `Fit()` or `Predict()`, the implementation builds the underlying mechanics directly in C#:
+- **Linear algebra:** vectors, matrices, vector dot products, matrix multiplication, and transpose.
+- **Activation functions:** ReLU, Sigmoid, and Tanh, including derivatives.
+- **Dense layers:** \(z = Wx + b\), optional element-wise activation, and gradients for weights, biases, and inputs.
+- **Learning:** Binary Cross-Entropy, backpropagation, and gradient-descent parameter updates.
+- **Verification:** automated xUnit tests, finite-difference gradient checks, and an executable training/evaluation demonstration.
+- **Evaluation:** predictions and accuracy on a small held-out synthetic classification set.
 
-- Linear algebra
-- Activation functions and derivatives
-- Forward propagation
-- Loss calculation
-- Backpropagation
-- Gradient calculation
-- Gradient descent
-- Training
-- Test-set evaluation
-- Prediction and accuracy
+The core library has no dependency on ML.NET, TensorFlow, PyTorch, TorchSharp, or another ready-made deep-learning framework.
 
-The project is intentionally small. Its purpose is to make the relationship between mathematics, algorithms, and software implementation easy to follow.
+## Network in the demonstration
 
-## Network Architecture
+The sample uses a sequential fully connected network for binary classification:
 
-The current demonstration network is:
+    4 input features
+          |
+          v
+     Dense(4 -> 8) + ReLU
+          |
+          v
+     Dense(8 -> 8) + ReLU
+          |
+          v
+     Dense(8 -> 6) + ReLU
+          |
+          v
+     Dense(6 -> 4) + ReLU
+          |
+          v
+     Dense(4 -> 1) + Sigmoid
+          |
+          v
+     Probability in [0, 1] -> binary class
 
-```text
-Input: 4 features
-        │
-        ▼
-   Dense 4 → 8
-     ReLU
-        │
-        ▼
-   Dense 8 → 8
-     ReLU
-        │
-        ▼
-   Dense 8 → 6
-     ReLU
-        │
-        ▼
-   Dense 6 → 4
-     ReLU
-        │
-        ▼
-   Dense 4 → 1
-    Sigmoid
-        │
-        ▼
-   Binary prediction
-```
+The sample deliberately keeps the architecture small so the calculations remain traceable in a debugger.
 
-## Learning Pipeline
+## How learning works
 
-```text
-Input
-  ↓
-Forward Propagation
-  ↓
-Prediction
-  ↓
-Binary Cross Entropy
-  ↓
-Backpropagation
-  ↓
-Gradients (dW, db, dx)
-  ↓
-Gradient Descent
-  ↓
-Updated Weights / Biases
-  ↓
-Next Training Step
-```
+For one input vector \(x \in \mathbb{R}^{n}\), a dense layer with \(m\) outputs computes:
 
-For a dense layer:
+\[
+z = Wx + b, \qquad a = \phi(z)
+\]
 
-```text
-z  = W x + b
-a  = activation(z)
-```
+where \(W \in \mathbb{R}^{m \times n}\), \(b \in \mathbb{R}^{m}\), and \(\phi\) is an activation function.
 
-During backpropagation:
+Given the gradient arriving from the next operation, backpropagation applies the chain rule:
 
-```text
-dW = dz · xᵀ
-db = dz
-dx = Wᵀ · dz
-```
+\[
+\delta = \frac{\partial L}{\partial a} \odot \phi'(z)
+\]
 
-Parameter updates use gradient descent:
+\[
+\frac{\partial L}{\partial W} = \delta x^T, \qquad
+\frac{\partial L}{\partial b} = \delta, \qquad
+\frac{\partial L}{\partial x} = W^T\delta
+\]
 
-```text
-W ← W - η dW
-b ← b - η db
-```
+Gradient descent then updates each parameter:
+
+\[
+W \leftarrow W - \eta\frac{\partial L}{\partial W}, \qquad
+b \leftarrow b - \eta\frac{\partial L}{\partial b}
+\]
+
+The implementation exposes these calculations directly in **DenseLayer**. See [Mathematical Foundations](docs/MATHEMATICAL-FOUNDATIONS.md) for dimensional analysis, the loss derivative, and finite-difference gradient checking.
 
 ## Verification
 
-The project validates the implementation at several levels.
+The test suite covers:
 
-### Mathematical Operations
+- vector and matrix operations, including incompatible dimensions;
+- activation-function values and derivatives;
+- Binary Cross-Entropy values, derivatives, and invalid input handling;
+- dense-layer forward propagation and weight, bias, and input gradients;
+- network layer-shape validation and backward-pass preconditions;
+- analytical weight **and bias** gradients compared with central finite differences;
+- a gradient-descent step that reduces the loss for a simple example.
 
-Vector and matrix operations are tested, including:
+The console demonstration also performs an end-to-end training run and evaluates a held-out synthetic test set. The test set is intentionally small and simple: **100% accuracy on it is only a pipeline sanity check, not evidence of generalization or real-world model quality.**
 
-- Addition and subtraction
-- Scalar multiplication
-- Dot product
-- Matrix × vector
-- Matrix × matrix
-- Transpose
+GitHub Actions restores and builds the solution, runs the automated test project, and executes the console demonstration.
 
-### Activation Functions
+## Run locally
 
-Implemented and tested:
-
-- ReLU
-- Sigmoid
-- Tanh
-
-Both function values and derivatives are covered.
-
-### Backpropagation
-
-The dense layer and multi-layer network calculate:
-
-```text
-dW
-db
-dx
-```
-
-and propagate gradients backward through the network.
-
-### Numerical Gradient Checking
-
-Analytical gradients are compared with numerical gradients using finite differences.
-
-The current verification checks **172 weights** across the five-layer network.
-
-### Training
-
-The training loop is verified by measuring the loss before and after training.
-
-### Train / Test Evaluation
-
-The demonstration uses separate training and test samples and reports predictions and classification accuracy on unseen test samples.
-
-The current demonstration reaches **100% accuracy on its small deterministic test set**. This result is only intended to verify the implementation pipeline; it is not a claim of real-world model performance.
-
-## Why Build It From Scratch?
-
-High-level ML libraries are useful because they hide implementation details and make production systems easier to build.
-
-This project has a different purpose: expose those details.
-
-The implementation deliberately does **not** depend on:
-
-- ML.NET
-- TensorFlow.NET
-- TorchSharp
-- Accord.NET
-- Other ready-made Deep Learning frameworks
-
-The mathematics is implemented directly in C#.
-
-## Project Structure
-
-```text
-HowDeepLearningWorks/
-├── src/
-│   └── HowDeepLearningWorks/
-│       ├── Mathematics/
-│       │   ├── Vector.cs
-│       │   └── Matrix.cs
-│       ├── ActivationFunctions/
-│       │   ├── IActivationFunction.cs
-│       │   ├── ReLU.cs
-│       │   ├── Sigmoid.cs
-│       │   └── Tanh.cs
-│       ├── LossFunctions/
-│       │   └── BinaryCrossEntropy.cs
-│       └── NeuralNetworks/
-│           ├── DenseLayer.cs
-│           └── NeuralNetwork.cs
-│
-├── examples/
-│   └── HowDeepLearningWorks.Console/
-├── tests/
-│   └── HowDeepLearningWorks.Tests/
-├── docs/
-│   └── architecture/
-│       └── adr/
-└── .github/
-    └── workflows/
-```
-
-## Running the Demonstration
+Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
 
 From the repository root:
 
-```powershell
-dotnet restore examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj
+    dotnet restore HowDeepLearningWorks.sln
+    dotnet build HowDeepLearningWorks.sln --configuration Release --no-restore
+    dotnet test tests/HowDeepLearningWorks.Tests/HowDeepLearningWorks.Tests.csproj --configuration Release --no-build --no-restore
+    dotnet run --project examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj --configuration Release --no-build
 
-dotnet build examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj --configuration Release
+The console output reports the mathematical checks, training-loss change, predictions, and test accuracy. A failed check exits with an exception and a non-zero process result.
 
-dotnet run --project examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj --configuration Release
-```
+## Repository layout
 
-The console demonstration runs the mathematical and neural-network checks and then performs training and test-set evaluation.
+    .
+    ├── src/HowDeepLearningWorks/
+    │   ├── Mathematics/          # Vector and Matrix
+    │   ├── ActivationFunctions/  # ReLU, Sigmoid, Tanh
+    │   ├── LossFunctions/        # Binary Cross-Entropy
+    │   └── NeuralNetworks/       # DenseLayer and NeuralNetwork
+    ├── tests/HowDeepLearningWorks.Tests/
+    │   ├── MathematicsTests.cs
+    │   └── NeuralNetworkLearningTests.cs
+    ├── examples/HowDeepLearningWorks.Console/
+    │   └── Program.cs            # Executable training and verification demo
+    ├── docs/
+    │   ├── MATHEMATICAL-FOUNDATIONS.md
+    │   └── architecture/adr/
+    └── .github/workflows/ci.yml
 
-## Design Principles
+## Scope and limitations
 
-### Mathematics First
+This project is intentionally a **learning implementation**, not a general-purpose or production-ready neural-network framework.
 
-The implementation starts with vectors and matrices rather than a high-level neural-network abstraction.
+- It currently supports sequential fully connected layers and one sample at a time.
+- Its matrix operations use straightforward managed C# loops rather than optimized numerical kernels.
+- The training demonstration uses gradient descent; optimizers such as Adam, batching, model serialization, GPU execution, and production deployment are outside the current scope.
+- The synthetic dataset is designed to make the training pipeline easy to inspect, not to serve as a meaningful benchmark.
 
-### Explicit Learning Mechanics
+These constraints keep attention on the most important learning sequence:
 
-Forward propagation, loss, gradients, backpropagation, and parameter updates remain visible in the code.
-
-### Small Architecture
-
-Abstractions are introduced only where they represent a real variation point, such as activation functions.
-
-### Verification Before Expansion
-
-Each major capability is tested before the project moves to the next layer of complexity.
-
-## Current Status
-
-The first educational implementation is complete for the intended scope:
-
-- [x] Mathematical core
-- [x] Activation functions
-- [x] Dense layer
-- [x] Forward propagation
-- [x] Backpropagation
-- [x] Numerical gradient checking
-- [x] Gradient descent
-- [x] Training loop
-- [x] Train/test evaluation
-- [x] Prediction
-- [x] Accuracy calculation
-
-The project intentionally stops here rather than turning into a general-purpose Deep Learning framework.
-
-## What This Demonstrates
-
-The value of this project is not the number of machine-learning APIs it contains.
-
-It demonstrates the complete path from mathematical reasoning to executable software:
-
-```text
-Mathematics
-    ↓
-Algorithm
-    ↓
-Implementation
-    ↓
-Numerical Verification
-    ↓
-Training
-    ↓
-Evaluation
-```
-
-That connection is the core of `HowDeepLearningWorks`.
+    Mathematics -> Algorithm -> Implementation -> Numerical checks -> Training -> Evaluation
 
 ## License
 
-MIT License
+MIT. See [LICENSE](LICENSE).
