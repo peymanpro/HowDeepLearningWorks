@@ -638,7 +638,7 @@ static void RunPhase71Checks()
 
     AssertTrue(
         "Test accuracy is at least 75%",
-        accuracy >= 1.0);
+        accuracy >= 0.75);
 
     Console.WriteLine();
     Console.WriteLine(
