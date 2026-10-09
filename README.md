@@ -15,7 +15,7 @@ The goal is understanding and verification, not competing with production librar
 
 - **Linear algebra:** vectors, matrices, vector dot products, matrix multiplication, and transpose.
 - **Activation functions:** ReLU, Sigmoid, and Tanh, including derivatives.
-- **Dense layers:** \(z = Wx + b\), optional element-wise activation, and gradients for weights, biases, and inputs.
+- **Dense layers:** $z = Wx + b$, optional element-wise activation, and gradients for weights, biases, and inputs.
 - **Learning:** Binary Cross-Entropy, backpropagation, and gradient-descent parameter updates.
 - **Verification:** automated xUnit tests, finite-difference gradient checks, and an executable training/evaluation demonstration.
 - **Evaluation:** predictions and accuracy on a small held-out synthetic classification set.
@@ -50,32 +50,32 @@ The sample deliberately keeps the architecture small so the calculations remain 
 
 ## How learning works
 
-For one input vector \(x \in \mathbb{R}^{n}\), a dense layer with \(m\) outputs computes:
+For one input vector $x \in \mathbb{R}^{n}$, a dense layer with $m$ outputs computes:
 
-\[
+$$
 z = Wx + b, \qquad a = \phi(z)
-\]
+$$
 
-where \(W \in \mathbb{R}^{m \times n}\), \(b \in \mathbb{R}^{m}\), and \(\phi\) is an activation function.
+where $W \in \mathbb{R}^{m \times n}$, $b \in \mathbb{R}^{m}$, and $\phi$ is an activation function.
 
 Given the gradient arriving from the next operation, backpropagation applies the chain rule:
 
-\[
+$$
 \delta = \frac{\partial L}{\partial a} \odot \phi'(z)
-\]
+$$
 
-\[
+$$
 \frac{\partial L}{\partial W} = \delta x^T, \qquad
 \frac{\partial L}{\partial b} = \delta, \qquad
 \frac{\partial L}{\partial x} = W^T\delta
-\]
+$$
 
 Gradient descent then updates each parameter:
 
-\[
+$$
 W \leftarrow W - \eta\frac{\partial L}{\partial W}, \qquad
 b \leftarrow b - \eta\frac{\partial L}{\partial b}
-\]
+$$
 
 The implementation exposes these calculations directly in **DenseLayer**. See [Mathematical Foundations](docs/MATHEMATICAL-FOUNDATIONS.md) for dimensional analysis, the loss derivative, and finite-difference gradient checking.
 
