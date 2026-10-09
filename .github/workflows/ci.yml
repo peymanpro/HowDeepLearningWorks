@@ -37,7 +37,7 @@ jobs:
 
   publish-v1-release:
     name: Publish v1.0.0 GitHub Release
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.event.head_commit.message == 'release: publish v1.0.0'
+    if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && github.event.head_commit.message == 'release: publish v1.0.0' }}"
     needs: build-and-test
     runs-on: ubuntu-latest
     permissions:
