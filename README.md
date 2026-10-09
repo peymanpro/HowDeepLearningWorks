@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/peymanpro/HowDeepLearningWorks/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/peymanpro/HowDeepLearningWorks/actions/workflows/ci.yml)
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
+[![Latest Release](https://img.shields.io/github/v/release/peymanpro/HowDeepLearningWorks?display_name=tag)](https://github.com/peymanpro/HowDeepLearningWorks/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **Understand how neural networks learn by implementing the mathematics in C#—without hiding the mechanics behind a machine-learning framework.**
