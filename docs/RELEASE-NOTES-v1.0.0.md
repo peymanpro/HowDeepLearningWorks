@@ -17,7 +17,7 @@ The first stable educational release of HowDeepLearningWorks: a from-scratch den
 
 ## Verification
 
-At the release candidate commit, GitHub Actions completed successfully:
+The release workflow is gated on a successful restore/build, xUnit run, and console demonstration. At the release candidate commit, GitHub Actions completed successfully:
 
 - 16 automated tests passed; 0 failed and 0 skipped.
 - The console gradient check passed for all 172 weights in the demonstration network.
