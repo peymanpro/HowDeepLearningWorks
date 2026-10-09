@@ -10,6 +10,7 @@ Documentation-only patch release following v1.0.0.
 - Keep the derivations for dense-layer gradients, Binary Cross-Entropy with Sigmoid, gradient descent, and finite-difference gradient checking readable in GitHub Markdown.
 
 No executable code or model behavior changed from v1.0.0.
+The release tag points to the source snapshot containing these Markdown rendering corrections.
 
 ## Verification
 
