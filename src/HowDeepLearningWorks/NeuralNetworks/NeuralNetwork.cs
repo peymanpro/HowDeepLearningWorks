@@ -1,4 +1,6 @@
-﻿using HowDeepLearningWorks.Mathematics;
+﻿using HowDeepLearningWorks.ActivationFunctions;
+using HowDeepLearningWorks.Mathematics;
+using HowDeepLearningWorks.NeuralNetworks.Initialization;
 
 namespace HowDeepLearningWorks.NeuralNetworks;
 
@@ -35,6 +37,35 @@ public sealed class NeuralNetwork
         }
 
         _layers.Add(layer);
+    }
+
+    /// <summary>
+    /// Initializes all layer weights using a reproducible seed.
+    /// ReLU layers use He normal initialization; other layers use Xavier/Glorot uniform initialization.
+    /// Biases are left unchanged.
+    /// </summary>
+    /// <param name="seed">The seed for the random number generator.</param>
+    public void InitializeWeights(int seed)
+    {
+        if (_layers.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "The network must contain at least one layer.");
+        }
+
+        var random = new Random(seed);
+        var heInitializer = new HeNormalInitializer();
+        var xavierInitializer = new XavierUniformInitializer();
+
+        foreach (var layer in _layers)
+        {
+            IWeightInitializer initializer =
+                layer.Activation is ReLU
+                    ? heInitializer
+                    : xavierInitializer;
+
+            initializer.Initialize(layer.Weights, random);
+        }
     }
 
     /// <summary>
