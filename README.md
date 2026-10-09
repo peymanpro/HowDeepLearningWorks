@@ -1,15 +1,15 @@
-# HowDeepLearningWorks
+# SharpNeuralNetwork
 
 [![CI](https://github.com/peymanpro/HowDeepLearningWorks/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/peymanpro/HowDeepLearningWorks/actions/workflows/ci.yml)
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
 [![Latest Release](https://img.shields.io/github/v/release/peymanpro/HowDeepLearningWorks?display_name=tag)](https://github.com/peymanpro/HowDeepLearningWorks/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Understand how neural networks learn by implementing the mathematics in C#—without hiding the mechanics behind a machine-learning framework.**
+**A lightweight neural-network implementation in C#/.NET 8 with inspectable mathematics, reproducible initialization, backpropagation, and numerical verification.**
 
-**HowDeepLearningWorks** is a small, from-scratch educational implementation of a dense neural network. It makes the path from linear algebra to training explicit: forward propagation, loss, backpropagation, numerical gradient checking, parameter updates, and evaluation.
+**SharpNeuralNetwork** implements a sequential dense neural network directly in C#. Its computation path is explicit—from vector and matrix operations through forward propagation, loss gradients, backpropagation, parameter updates, and evaluation—without relying on a prebuilt deep-learning framework.
 
-The goal is understanding and verification, not competing with production libraries.
+The current scope is a compact neural-network engine for single-sample binary classification. It is not yet a general-purpose or production-ready ML framework.
 
 ## What is implemented?
 
@@ -47,11 +47,11 @@ The sample uses a sequential fully connected network for binary classification:
           v
      Probability in [0, 1] -> binary class
 
-The sample deliberately keeps the architecture small so the calculations remain traceable in a debugger.
+The sample deliberately keeps the architecture small so its execution is easy to inspect in a debugger.
 
-## Reproducible weight initialization
+## Weight initialization
 
-New dense layers start with zero weights and zero biases so their calculations are easy to inspect in isolation. Before training, initialize a network with a fixed seed:
+New dense layers start with zero weights and zero biases. Before training, initialize a network with a fixed seed:
 
     network.InitializeWeights(seed: 42);
 
@@ -140,18 +140,18 @@ The console demo reports its seed, hyperparameters, training-loss change, predic
     │   └── architecture/adr/
     └── .github/workflows/ci.yml
 
-## Scope and limitations
+## Implementation scope and limitations
 
-This project is intentionally a **learning implementation**, not a general-purpose or production-ready neural-network framework.
+This is a compact neural-network implementation, not yet a general-purpose or production-ready ML framework.
 
 - It currently supports sequential fully connected layers and one sample at a time.
 - Its matrix operations use straightforward managed C# loops rather than optimized numerical kernels.
 - The training demonstration uses gradient descent; optimizers such as Adam, batching, model serialization, GPU execution, and production deployment are outside the current scope.
 - The synthetic dataset is designed to make the training pipeline easy to inspect, not to serve as a meaningful benchmark.
 
-These constraints keep attention on the most important learning sequence:
+The current implementation keeps the full computation path visible:
 
-    Mathematics -> Algorithm -> Implementation -> Numerical checks -> Training -> Evaluation
+    Linear algebra -> Forward pass -> Loss -> Backpropagation -> Parameter update -> Evaluation
 
 ## License
 
