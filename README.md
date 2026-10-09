@@ -16,6 +16,7 @@ The goal is understanding and verification, not competing with production librar
 - **Linear algebra:** vectors, matrices, vector dot products, matrix multiplication, and transpose.
 - **Activation functions:** ReLU, Sigmoid, and Tanh, including derivatives.
 - **Dense layers:** $z = Wx + b$, optional element-wise activation, and gradients for weights, biases, and inputs.
+- **Weight initialization:** seeded He normal initialization for ReLU layers and Xavier/Glorot uniform initialization for other layers.
 - **Learning:** Binary Cross-Entropy, backpropagation, and gradient-descent parameter updates.
 - **Verification:** automated xUnit tests, finite-difference gradient checks, and an executable training/evaluation demonstration.
 - **Evaluation:** predictions and accuracy on a small held-out synthetic classification set.
@@ -47,6 +48,14 @@ The sample uses a sequential fully connected network for binary classification:
      Probability in [0, 1] -> binary class
 
 The sample deliberately keeps the architecture small so the calculations remain traceable in a debugger.
+
+## Reproducible weight initialization
+
+New dense layers start with zero weights and zero biases so their calculations are easy to inspect in isolation. Before training, initialize a network with a fixed seed:
+
+    network.InitializeWeights(seed: 42);
+
+The network applies He normal initialization to ReLU layers and Xavier/Glorot uniform initialization to other layers. The seed makes the resulting weights repeatable on the same .NET runtime, which helps reproduce examples and debug training behavior. Biases remain zero.
 
 ## How learning works
 
@@ -106,7 +115,7 @@ From the repository root:
     dotnet test tests/HowDeepLearningWorks.Tests/HowDeepLearningWorks.Tests.csproj --configuration Release --no-build --no-restore
     dotnet run --project examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj --configuration Release --no-build
 
-The console output reports the mathematical checks, training-loss change, predictions, and test accuracy. A failed check exits with an exception and a non-zero process result.
+The console demo reports its seed, hyperparameters, training-loss change, predictions, and held-out test accuracy. It exits with an error if training fails to reduce loss or the small synthetic test set does not meet its sanity-check threshold.
 
 ## Repository layout
 
@@ -115,10 +124,14 @@ The console output reports the mathematical checks, training-loss change, predic
     │   ├── Mathematics/          # Vector and Matrix
     │   ├── ActivationFunctions/  # ReLU, Sigmoid, Tanh
     │   ├── LossFunctions/        # Binary Cross-Entropy
-    │   └── NeuralNetworks/       # DenseLayer and NeuralNetwork
+    │   └── NeuralNetworks/
+    │       ├── DenseLayer.cs
+    │       ├── NeuralNetwork.cs
+    │       └── Initialization/    # He normal and Xavier uniform
     ├── tests/HowDeepLearningWorks.Tests/
     │   ├── MathematicsTests.cs
-    │   └── NeuralNetworkLearningTests.cs
+    │   ├── NeuralNetworkLearningTests.cs
+    │   └── WeightInitializationTests.cs
     ├── examples/HowDeepLearningWorks.Console/
     │   └── Program.cs            # Executable training and verification demo
     ├── docs/
