@@ -102,9 +102,9 @@ public sealed class WeightInitializationTests
             }
         }
 
-        Assert.Contains(
-            first.Layers[0].Weights.ToString() ?? string.Empty,
-            value => value.Length >= 0);
+        Assert.NotEqual(
+            first.Layers[0].Weights[0, 0],
+            first.Layers[0].Weights[0, 1]);
     }
 
     [Fact]
