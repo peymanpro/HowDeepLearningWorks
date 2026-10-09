@@ -75,6 +75,13 @@ public sealed class WeightInitializationTests
         first.InitializeWeights(seed: 17);
         second.InitializeWeights(seed: 17);
 
+        var expectedFirstWeights = new Matrix(4, 3);
+        var expectedSecondWeights = new Matrix(2, 4);
+        var expectedRandom = new Random(17);
+        new HeNormalInitializer().Initialize(expectedFirstWeights, expectedRandom);
+        new XavierUniformInitializer().Initialize(expectedSecondWeights, expectedRandom);
+        var expectedWeights = new[] { expectedFirstWeights, expectedSecondWeights };
+
         Assert.Equal(first.Layers.Count, second.Layers.Count);
 
         for (var layerIndex = 0; layerIndex < first.Layers.Count; layerIndex++)
@@ -92,6 +99,10 @@ public sealed class WeightInitializationTests
                     Assert.Equal(
                         left.Weights[row, column],
                         right.Weights[row, column],
+                        14);
+                    Assert.Equal(
+                        expectedWeights[layerIndex][row, column],
+                        left.Weights[row, column],
                         14);
                 }
             }
