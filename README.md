@@ -99,6 +99,7 @@ The test suite covers:
 - network layer-shape validation and backward-pass preconditions;
 - analytical weight **and bias** gradients compared with central finite differences;
 - a gradient-descent step that reduces the loss for a simple example.
+- seeded initialization, including He variance, Xavier/Glorot bounds, layer-strategy selection, and zero-bias preservation.
 
 The console demonstration also performs an end-to-end training run and evaluates a held-out synthetic test set. The test set is intentionally small and simple: **100% accuracy on it is only a pipeline sanity check, not evidence of generalization or real-world model quality.**
 
