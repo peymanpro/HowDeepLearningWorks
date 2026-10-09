@@ -149,26 +149,26 @@ Starting every weight at zero (or at the same constant) gives neurons in the sam
 
 It initializes each layer based on its activation function and uses one pseudorandom generator for the network. The same seed reproduces the same initial weights on the same .NET runtime. Biases are left unchanged (they start at zero in a new dense layer).
 
-For a layer with fan-in \(n\) and fan-out \(m\):
+For a layer with fan-in $n$ and fan-out $m$:
 
 ### He normal initialization
 
-For ReLU layers, each weight is sampled from a zero-mean normal distribution with variance \(2/n\):
+For ReLU layers, each weight is sampled from a zero-mean normal distribution with variance $2/n$:
 
-\[
+$$
 W_{ij} \sim \mathcal{N}\left(0,\frac{2}{n}\right)
-\]
+$$
 
-The implementation uses the Box–Muller transform to generate standard-normal samples, then multiplies them by \(\sqrt{2/n}\).
+The implementation uses the Box–Muller transform to generate standard-normal samples, then multiplies them by $\sqrt{2/n}$.
 
 ### Xavier/Glorot uniform initialization
 
 For layers with other activations, the network uses the Glorot uniform bound:
 
-\[
+$$
 W_{ij} \sim \mathcal{U}(-a,a), \qquad
 a = \sqrt{\frac{6}{n+m}}
-\]
+$$
 
 This samples each weight uniformly between the negative and positive bound. The WeightInitializationTests suite checks seeded reproducibility, the He variance scale, and the Xavier bounds.
 
