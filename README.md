@@ -1,8 +1,8 @@
 # SharpNeuralNetwork
 
-[![CI](https://github.com/peymanpro/HowDeepLearningWorks/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/peymanpro/HowDeepLearningWorks/actions/workflows/ci.yml)
+[![CI](https://github.com/peymanpro/SharpNeuralNetwork/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/peymanpro/SharpNeuralNetwork/actions/workflows/ci.yml)
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
-[![Latest Release](https://img.shields.io/github/v/release/peymanpro/HowDeepLearningWorks?display_name=tag)](https://github.com/peymanpro/HowDeepLearningWorks/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/peymanpro/SharpNeuralNetwork?display_name=tag)](https://github.com/peymanpro/SharpNeuralNetwork/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **A lightweight neural-network implementation in C#/.NET 8 with inspectable mathematics, reproducible initialization, backpropagation, and numerical verification.**
@@ -111,17 +111,17 @@ Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
 
 From the repository root:
 
-    dotnet restore HowDeepLearningWorks.sln
-    dotnet build HowDeepLearningWorks.sln --configuration Release --no-restore
-    dotnet test tests/HowDeepLearningWorks.Tests/HowDeepLearningWorks.Tests.csproj --configuration Release --no-build --no-restore
-    dotnet run --project examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj --configuration Release --no-build
+    dotnet restore SharpNeuralNetwork.sln
+    dotnet build SharpNeuralNetwork.sln --configuration Release --no-restore
+    dotnet test tests/SharpNeuralNetwork.Tests/SharpNeuralNetwork.Tests.csproj --configuration Release --no-build --no-restore
+    dotnet run --project examples/SharpNeuralNetwork.Console/SharpNeuralNetwork.Console.csproj --configuration Release --no-build
 
 The console demo reports its seed, hyperparameters, training-loss change, predictions, and held-out test accuracy. It exits with an error if training fails to reduce loss or the small synthetic test set does not meet its sanity-check threshold.
 
 ## Repository layout
 
     .
-    ├── src/HowDeepLearningWorks/
+    ├── src/SharpNeuralNetwork/
     │   ├── Mathematics/          # Vector and Matrix
     │   ├── ActivationFunctions/  # ReLU, Sigmoid, Tanh
     │   ├── LossFunctions/        # Binary Cross-Entropy
@@ -129,11 +129,11 @@ The console demo reports its seed, hyperparameters, training-loss change, predic
     │       ├── DenseLayer.cs
     │       ├── NeuralNetwork.cs
     │       └── Initialization/    # He normal and Xavier uniform
-    ├── tests/HowDeepLearningWorks.Tests/
+    ├── tests/SharpNeuralNetwork.Tests/
     │   ├── MathematicsTests.cs
     │   ├── NeuralNetworkLearningTests.cs
     │   └── WeightInitializationTests.cs
-    ├── examples/HowDeepLearningWorks.Console/
+    ├── examples/SharpNeuralNetwork.Console/
     │   └── Program.cs            # Executable training and verification demo
     ├── docs/
     │   ├── MATHEMATICAL-FOUNDATIONS.md

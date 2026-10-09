@@ -136,7 +136,7 @@ A gradient check can fail or become misleading if an activation crosses a non-sm
 
 ## 6. Implementation boundaries
 
-The layer stores the most recent input and pre-activation so that **Backward** can use the cache created by **Forward**. This is pedagogically simple, but it also means the same layer instance is stateful: run one forward pass and its backward pass before reusing it for another training example. The current design is intended for single-example educational execution, not concurrent or batched training.
+The layer stores the most recent input and pre-activation so that **Backward** can use the cache created by **Forward**. This is explicit and straightforward, but it also means the same layer instance is stateful: run one forward pass and its backward pass before reusing it for another training example. The current design is intended for single-example execution, not concurrent or batched training.
 
 The matrix and vector classes use straightforward managed C# loops. The implementation prioritizes visible arithmetic and testability over throughput, SIMD kernels, GPU execution, or the broader features expected from a production ML framework.
 
@@ -172,4 +172,4 @@ $$
 
 This samples each weight uniformly between the negative and positive bound. The WeightInitializationTests suite checks seeded reproducibility, the He variance scale, and the Xavier bounds.
 
-These are useful defaults for this educational network, not a claim that one initializer is optimal for every architecture or activation function.
+These are useful defaults for this current network, not a claim that one initializer is optimal for every architecture or activation function.

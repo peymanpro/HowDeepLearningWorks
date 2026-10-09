@@ -1,4 +1,4 @@
-﻿namespace HowDeepLearningWorks.ActivationFunctions;
+﻿namespace SharpNeuralNetwork.ActivationFunctions;
 
 /// <summary>
 /// Defines the contract for an activation function.

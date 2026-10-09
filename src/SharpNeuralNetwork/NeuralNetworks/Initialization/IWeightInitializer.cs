@@ -1,6 +1,6 @@
-using HowDeepLearningWorks.Mathematics;
+using SharpNeuralNetwork.Mathematics;
 
-namespace HowDeepLearningWorks.NeuralNetworks.Initialization;
+namespace SharpNeuralNetwork.NeuralNetworks.Initialization;
 
 /// <summary>
 /// Defines a strategy for initializing a dense layer's weight matrix.

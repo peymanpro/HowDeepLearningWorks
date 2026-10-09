@@ -1,4 +1,4 @@
-﻿namespace HowDeepLearningWorks.ActivationFunctions;
+﻿namespace SharpNeuralNetwork.ActivationFunctions;
 
 /// <summary>
 /// Sigmoid activation function.

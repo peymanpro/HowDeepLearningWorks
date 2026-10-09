@@ -1,7 +1,7 @@
-using HowDeepLearningWorks.ActivationFunctions;
-using HowDeepLearningWorks.LossFunctions;
-using HowDeepLearningWorks.Mathematics;
-using HowDeepLearningWorks.NeuralNetworks;
+using SharpNeuralNetwork.ActivationFunctions;
+using SharpNeuralNetwork.LossFunctions;
+using SharpNeuralNetwork.Mathematics;
+using SharpNeuralNetwork.NeuralNetworks;
 
 const int seed = 42;
 const int epochs = 2000;
@@ -38,7 +38,7 @@ var accuracy = CalculateAccuracy(
     dataset.TestInputs,
     dataset.TestTargets);
 
-Console.WriteLine("HowDeepLearningWorks");
+Console.WriteLine("SharpNeuralNetwork");
 Console.WriteLine("====================");
 Console.WriteLine($"Seed:          {seed}");
 Console.WriteLine($"Epochs:        {epochs}");

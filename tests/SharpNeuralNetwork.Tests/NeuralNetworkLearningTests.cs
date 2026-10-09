@@ -1,9 +1,9 @@
-using HowDeepLearningWorks.ActivationFunctions;
-using HowDeepLearningWorks.LossFunctions;
-using HowDeepLearningWorks.Mathematics;
-using HowDeepLearningWorks.NeuralNetworks;
+using SharpNeuralNetwork.ActivationFunctions;
+using SharpNeuralNetwork.LossFunctions;
+using SharpNeuralNetwork.Mathematics;
+using SharpNeuralNetwork.NeuralNetworks;
 
-namespace HowDeepLearningWorks.Tests;
+namespace SharpNeuralNetwork.Tests;
 
 public sealed class NeuralNetworkLearningTests
 {

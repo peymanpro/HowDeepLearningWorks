@@ -1,9 +1,9 @@
-using HowDeepLearningWorks.ActivationFunctions;
-using HowDeepLearningWorks.Mathematics;
-using HowDeepLearningWorks.NeuralNetworks;
-using HowDeepLearningWorks.NeuralNetworks.Initialization;
+using SharpNeuralNetwork.ActivationFunctions;
+using SharpNeuralNetwork.Mathematics;
+using SharpNeuralNetwork.NeuralNetworks;
+using SharpNeuralNetwork.NeuralNetworks.Initialization;
 
-namespace HowDeepLearningWorks.Tests;
+namespace SharpNeuralNetwork.Tests;
 
 public sealed class WeightInitializationTests
 {

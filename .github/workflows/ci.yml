@@ -24,13 +24,13 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore solution
-        run: dotnet restore HowDeepLearningWorks.sln
+        run: dotnet restore SharpNeuralNetwork.sln
 
       - name: Build solution
-        run: dotnet build HowDeepLearningWorks.sln --configuration Release --no-restore
+        run: dotnet build SharpNeuralNetwork.sln --configuration Release --no-restore
 
       - name: Run automated tests
-        run: dotnet test tests/HowDeepLearningWorks.Tests/HowDeepLearningWorks.Tests.csproj --configuration Release --no-build --no-restore
+        run: dotnet test tests/SharpNeuralNetwork.Tests/SharpNeuralNetwork.Tests.csproj --configuration Release --no-build --no-restore
 
       - name: Run console demonstration
-        run: dotnet run --project examples/HowDeepLearningWorks.Console/HowDeepLearningWorks.Console.csproj --configuration Release --no-build
+        run: dotnet run --project examples/SharpNeuralNetwork.Console/SharpNeuralNetwork.Console.csproj --configuration Release --no-build

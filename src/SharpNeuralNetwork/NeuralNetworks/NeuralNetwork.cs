@@ -1,8 +1,8 @@
-﻿using HowDeepLearningWorks.ActivationFunctions;
-using HowDeepLearningWorks.Mathematics;
-using HowDeepLearningWorks.NeuralNetworks.Initialization;
+﻿using SharpNeuralNetwork.ActivationFunctions;
+using SharpNeuralNetwork.Mathematics;
+using SharpNeuralNetwork.NeuralNetworks.Initialization;
 
-namespace HowDeepLearningWorks.NeuralNetworks;
+namespace SharpNeuralNetwork.NeuralNetworks;
 
 /// <summary>
 /// Represents a sequential neural network composed of dense layers.

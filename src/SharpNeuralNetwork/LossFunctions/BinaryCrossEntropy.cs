@@ -1,4 +1,4 @@
-﻿namespace HowDeepLearningWorks.LossFunctions;
+﻿namespace SharpNeuralNetwork.LossFunctions;
 
 /// <summary>
 /// Computes Binary Cross Entropy loss for binary classification.

@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\HowDeepLearningWorks\HowDeepLearningWorks.csproj" />
+    <ProjectReference Include="..\..\src\SharpNeuralNetwork\SharpNeuralNetwork.csproj" />
   </ItemGroup>
 
 </Project>

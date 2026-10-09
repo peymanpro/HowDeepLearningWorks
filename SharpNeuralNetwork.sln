@@ -5,15 +5,15 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{68480DFB-FF42-429F-AC5D-C51213CBC503}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HowDeepLearningWorks", "src\HowDeepLearningWorks\HowDeepLearningWorks.csproj", "{BA878E74-3321-4C7B-9BF5-2B9A2F1F782E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpNeuralNetwork", "src\SharpNeuralNetwork\SharpNeuralNetwork.csproj", "{BA878E74-3321-4C7B-9BF5-2B9A2F1F782E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{654F79FC-EBAA-4119-9B1A-9403D46D45A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HowDeepLearningWorks.Console", "examples\HowDeepLearningWorks.Console\HowDeepLearningWorks.Console.csproj", "{DCDCD570-5C96-4B9C-AB20-D62AD1FCFF10}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpNeuralNetwork.Console", "examples\SharpNeuralNetwork.Console\SharpNeuralNetwork.Console.csproj", "{DCDCD570-5C96-4B9C-AB20-D62AD1FCFF10}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{DAAF68C6-CFB8-4E5E-8648-16506B504E9C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HowDeepLearningWorks.Tests", "tests\HowDeepLearningWorks.Tests\HowDeepLearningWorks.Tests.csproj", "{3A8F6599-4318-41B8-9A4E-9233050C2A1D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpNeuralNetwork.Tests", "tests\SharpNeuralNetwork.Tests\SharpNeuralNetwork.Tests.csproj", "{3A8F6599-4318-41B8-9A4E-9233050C2A1D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

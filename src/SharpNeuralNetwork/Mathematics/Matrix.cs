@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HowDeepLearningWorks.Mathematics;
+namespace SharpNeuralNetwork.Mathematics;
 
 /// <summary>
 /// Represents a two-dimensional matrix of double-precision values.
